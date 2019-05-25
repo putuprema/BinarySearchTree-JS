@@ -34,9 +34,16 @@ class Node {
     }
   }
 
+  static search(curr, key) {
+    if (curr == null) return null;
+    if (key < curr.data) return Node.search(curr.left, key);
+    else if (key > curr.data) return Node.search(curr.right, key);
+    else return curr;
+  }
+
   static pop(startingNode, key) {
     let node = startingNode;
-    if (!node) return null;
+    if (!node) {console.log('specified number does not exist'); return null;}
     else {
       if (key < node.data) node.left = Node.pop(node.left, key);
       else if (key > node.data) node.right = Node.pop(node.right, key);
@@ -48,11 +55,13 @@ class Node {
           let del = node;
           node = node.right;
           del = null;
+          node.y -= 40;
         }
         else if (!node.right) { // if node has LEFT child
           let del = node;
           node = node.left;
           del = null;
+          node.y -= 40;
         }
         else { // if node has TWO children
           let largestLeft = node.left;
@@ -112,7 +121,8 @@ class Node {
 
   static printPreOrder(node) {
     if (node !== null) {
-      console.log(node);
+      // console.log(node);
+      msg += node.data + ' ';
       this.printPreOrder(node.left);
       this.printPreOrder(node.right);
     }
@@ -121,7 +131,8 @@ class Node {
   static printInOrder(node) {
     if (node !== null) {
       this.printInOrder(node.left);
-      console.log(node);
+      // console.log(node);
+      msg += node.data + ' ';
       this.printInOrder(node.right);
     }
   }
@@ -130,7 +141,8 @@ class Node {
     if (node !== null) {
       this.printPostOrder(node.left);
       this.printPostOrder(node.right);
-      console.log(node);
+      msg += node.data + ' ';
+      // console.log(node);
     }
   }
 }
