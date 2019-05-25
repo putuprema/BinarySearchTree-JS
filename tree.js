@@ -1,90 +1,117 @@
+/* eslint-disable no-lonely-if */
+/* eslint-disable no-else-return */
 /* eslint-disable brace-style */
 class Node {
-  constructor(data, height) {
+  constructor(data, height, x, y, parent, loc) {
     this.data = data;
-    this.left = undefined;
-    this.right = undefined;
+    this.left = null;
+    this.right = null;
+    this.parent = parent;
+    this.loc = loc;
     this.height = height;
+    this.balanceFactor = 0;
+    this.x = width / 2;
+    this.y = y;
   }
 
-  print() {
-    console.log(this.data);
+  display() {
+    stroke('white');
+    strokeWeight(3);
+    ellipseMode(CENTER);
+    textAlign(CENTER);
+    textSize(15);
+    if (this.left != null) line(this.x, this.y, this.left.x, this.left.y);
+    if (this.right != null) line(this.x, this.y, this.right.x, this.right.y);
+    ellipse(this.x, this.y, 30, 30);
+    text(this.data, this.x, this.y + 5);
+  }
+
+  static display(curr) {
+    if (curr != null) {
+      curr.display();
+      Node.display(curr.left);
+      Node.display(curr.right);
+    }
   }
 
   static pop(startingNode, key) {
-    let nodeToDelete = startingNode;
-    let parentOfDeleted = startingNode;
-    let nodeLoc = 0; // 0 is left, 1 is right
-    while (nodeToDelete != undefined) {
-      if (key < nodeToDelete.data) {
-        nodeLoc = 0;
-        parentOfDeleted = nodeToDelete;
-        nodeToDelete = nodeToDelete.left;
-      } else if (key > nodeToDelete.data) {
-        nodeLoc = 1;
-        parentOfDeleted = nodeToDelete;
-        nodeToDelete = nodeToDelete.right;
-      } else break;
-    }
-
-    // console.log(parentOfDeleted);
-    // console.log(nodeToDelete);
-
-    if (nodeToDelete.left == undefined && nodeToDelete.right == undefined) {
-      nodeToDelete = undefined;
-      if (nodeLoc == 0) parentOfDeleted.left = undefined;
-      else if (nodeLoc == 1) parentOfDeleted.right = undefined;
-    }
-    else if (nodeToDelete.left == undefined) { // if nodeToDelete has right child
-      if (nodeLoc == 0) parentOfDeleted.left = nodeToDelete.right;
-      else if (nodeLoc == 1) parentOfDeleted.right = nodeToDelete.right;
-      nodeToDelete = undefined;
-    }
-    else if (nodeToDelete.right == undefined) { // if nodeToDelete has left child
-      if (nodeLoc == 0) parentOfDeleted.left = nodeToDelete.left;
-      else if (nodeLoc == 1) parentOfDeleted.right = nodeToDelete.left;
-      nodeToDelete = undefined;
-    }
-    else { // if nodeToDelete has both child
-      let largestLeft = nodeToDelete.left;
-      while (largestLeft.right != undefined) largestLeft = largestLeft.right;
-      // console.log(largestLeft);
-      nodeToDelete.data = largestLeft.data;
-      Node.pop(nodeToDelete.left, largestLeft.data);
-    }
-  }
-
-  static push(data) {
-    if (root == undefined) {root = new Node(data, 0); console.log('test');}
+    let node = startingNode;
+    if (!node) return null;
     else {
-      let startNode = root;
-      let height = startNode.height;
-      let parentOfNew = root;
-      let dataLoc = 0; // 0 is left, 1 is right
-      while (startNode != undefined) {
-        if (data < startNode.data) {
-          dataLoc = 0;
-          parentOfNew = startNode;
-          startNode = startNode.left;
-          height += 1;
-        } else if (data > startNode.data) {
-          dataLoc = 1;
-          parentOfNew = startNode;
-          startNode = startNode.right;
-          height += 1;
+      if (key < node.data) node.left = Node.pop(node.left, key);
+      else if (key > node.data) node.right = Node.pop(node.right, key);
+      else {
+        if (!node.left && !node.right) {
+          node = null;
+        }
+        else if (!node.left) { // if node has RIGHT child
+          let del = node;
+          node = node.right;
+          del = null;
+        }
+        else if (!node.right) { // if node has LEFT child
+          let del = node;
+          node = node.left;
+          del = null;
+        }
+        else { // if node has TWO children
+          let largestLeft = node.left;
+          while (largestLeft.right) largestLeft = largestLeft.right;
+          node.data = largestLeft.data;
+          node.left = Node.pop(node.left, largestLeft.data);
         }
       }
-      let newNode = new Node(data, height);
-      if (dataLoc == 0) {
-        parentOfNew.left = newNode;
-      } else if (dataLoc == 1) {
-        parentOfNew.right = newNode;
+    }
+    if (node == null) return node;
+
+    node.height = Math.max(Node.getHeight(node.left), Node.getHeight(node.right)) + 1;
+
+    return node;
+  }
+
+  static getHeight(node) {
+    if (node == null) return 0;
+    return node.height;
+  }
+
+  static push(node, data, posX, posY, parent, loc) {
+    let curr = node;
+
+    if (curr == null) {
+      curr = new Node(data, 1, posX, posY, parent, loc);
+    }
+    else if (data < curr.data) {
+      curr.left = Node.push(curr.left, data, posX, posY + 40, curr, 'left');
+    }
+    else if (data > curr.data) {
+      curr.right = Node.push(curr.right, data, posX, posY + 40, curr, 'right');
+    }
+
+    curr.height = Math.max(Node.getHeight(curr.left), Node.getHeight(curr.right)) + 1;
+
+    return curr;
+
+  }
+
+  static updatePosition(node) {
+    if (node != null) {
+      if (node.loc == 'left') {
+        console.log('updating node ' + node.data + ' position');
+        console.log(node.data + '.x = ' + node.parent.data + '.x ' + ' - (2 ^ '  + (Node.getHeight(node.right) + 1) + ' * 10)');
+        node.x = node.parent.x - (pow(2, Node.getHeight(node.right) + 1) * 10);
       }
+      else if (node.loc == 'right') {
+        console.log('updating node ' + node.data + ' position');
+        console.log(node.data + '.x = ' + node.parent.data + '.x ' + ' + (2 ^ '  + (Node.getHeight(node.left) + 1) + ' * 10)');
+        node.x = node.parent.x + (pow(2, Node.getHeight(node.left) + 1) * 10);
+      }
+      Node.updatePosition(node.left);
+      Node.updatePosition(node.right);
     }
   }
 
   static printPreOrder(node) {
-    if (node !== undefined) {
+    if (node !== null) {
       console.log(node);
       this.printPreOrder(node.left);
       this.printPreOrder(node.right);
@@ -92,7 +119,7 @@ class Node {
   }
 
   static printInOrder(node) {
-    if (node !== undefined) {
+    if (node !== null) {
       this.printInOrder(node.left);
       console.log(node);
       this.printInOrder(node.right);
@@ -100,7 +127,7 @@ class Node {
   }
 
   static printPostOrder(node) {
-    if (node !== undefined) {
+    if (node !== null) {
       this.printPostOrder(node.left);
       this.printPostOrder(node.right);
       console.log(node);
