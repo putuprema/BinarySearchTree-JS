@@ -1,8 +1,8 @@
 /* eslint-disable no-lonely-if */
 /* eslint-disable no-else-return */
 /* eslint-disable brace-style */
-export default class Node {
-  constructor(p5, data, height, x, y, parent, loc) {
+class Node {
+  constructor(data, height, x, y, parent, loc) {
     this.data = data;
     this.left = null;
     this.right = null;
@@ -10,33 +10,33 @@ export default class Node {
     this.loc = loc;
     this.height = height;
     this.balanceFactor = 0;
-    this.x = p5.width / 2;
+    this.x = width / 2;
     this.y = y;
     this.highlighted = false;
   }
 
-  display(p5) {
-    p5.ellipseMode(p5.CENTER);
-    p5.textAlign(p5.CENTER);
-    p5.textSize(15);
-    p5.stroke('white');
-    p5.strokeWeight(3);
-    if (this.left != null) p5.line(this.x, this.y, this.left.x, this.left.y);
-    if (this.right != null) p5.line(this.x, this.y, this.right.x, this.right.y);
-    p5.noStroke();
-    p5.fill('red');
-    if (this.highlighted) p5.ellipse(this.x, this.y, 40, 40);
-    p5.fill('white');
-    p5.ellipse(this.x, this.y, 30, 30);
-    p5.fill('black');
-    p5.text(this.data, this.x, this.y + 5);
+  display() {
+    ellipseMode(CENTER);
+    textAlign(CENTER);
+    textSize(15);
+    stroke('white');
+    strokeWeight(3);
+    if (this.left != null) line(this.x, this.y, this.left.x, this.left.y);
+    if (this.right != null) line(this.x, this.y, this.right.x, this.right.y);
+    noStroke();
+    fill('red');
+    if (this.highlighted) ellipse(this.x, this.y, 40, 40);
+    fill('white');
+    ellipse(this.x, this.y, 30, 30);
+    fill('black');
+    text(this.data, this.x, this.y + 5);
   }
 
-  static display(p5, curr) {
+  static display(curr) {
     if (curr != null) {
-      curr.display(p5);
-      Node.display(p5, curr.left);
-      Node.display(p5, curr.right);
+      curr.display();
+      Node.display(curr.left);
+      Node.display(curr.right);
     }
   }
 
@@ -89,64 +89,65 @@ export default class Node {
     return node.height;
   }
 
-  static push(p5, node, data, posX, posY, parent, loc) {
+  static push(node, data, posX, posY, parent, loc) {
     let curr = node;
 
     if (curr == null) {
-      curr = new Node(p5, data, 1, posX, posY, parent, loc);
+      curr = new Node(data, 1, posX, posY, parent, loc);
     }
     else if (data < curr.data) {
-      curr.left = Node.push(p5, curr.left, data, posX, posY + 40, curr, 'left');
+      curr.left = Node.push(curr.left, data, posX, posY + 40, curr, 'left');
     }
     else if (data > curr.data) {
-      curr.right = Node.push(p5, curr.right, data, posX, posY + 40, curr, 'right');
+      curr.right = Node.push(curr.right, data, posX, posY + 40, curr, 'right');
     }
 
     curr.height = Math.max(Node.getHeight(curr.left), Node.getHeight(curr.right)) + 1;
 
     return curr;
+
   }
 
-  static updatePosition(node, p5) {
+  static updatePosition(node) {
     if (node != null) {
       if (node.loc == 'left') {
         console.log('updating node ' + node.data + ' position');
         console.log(node.data + '.x = ' + node.parent.data + '.x ' + ' - (2 ^ '  + (Node.getHeight(node.right) + 1) + ' * 10)');
-        node.x = node.parent.x - (p5.pow(2, Node.getHeight(node.right) + 1) * 10);
+        node.x = node.parent.x - (pow(2, Node.getHeight(node.right) + 1) * 10);
       }
       else if (node.loc == 'right') {
         console.log('updating node ' + node.data + ' position');
         console.log(node.data + '.x = ' + node.parent.data + '.x ' + ' + (2 ^ '  + (Node.getHeight(node.left) + 1) + ' * 10)');
-        node.x = node.parent.x + (p5.pow(2, Node.getHeight(node.left) + 1) * 10);
+        node.x = node.parent.x + (pow(2, Node.getHeight(node.left) + 1) * 10);
       }
-      Node.updatePosition(node.left, p5);
-      Node.updatePosition(node.right, p5);
+      Node.updatePosition(node.left);
+      Node.updatePosition(node.right);
     }
   }
 
-  static printPreOrder(p5, node) {
+  static printPreOrder(node) {
     if (node !== null) {
       // console.log(node);
-      p5.msg += node.data + ' ';
-      this.printPreOrder(p5, node.left);
-      this.printPreOrder(p5, node.right);
+      msg += node.data + ' ';
+      this.printPreOrder(node.left);
+      this.printPreOrder(node.right);
     }
   }
 
-  static printInOrder(p5, node) {
+  static printInOrder(node) {
     if (node !== null) {
-      this.printInOrder(p5, node.left);
+      this.printInOrder(node.left);
       // console.log(node);
-      p5.msg += node.data + ' ';
-      this.printInOrder(p5, node.right);
+      msg += node.data + ' ';
+      this.printInOrder(node.right);
     }
   }
 
-  static printPostOrder(p5, node) {
+  static printPostOrder(node) {
     if (node !== null) {
-      this.printPostOrder(p5, node.left);
-      this.printPostOrder(p5, node.right);
-      p5.msg += node.data + ' ';
+      this.printPostOrder(node.left);
+      this.printPostOrder(node.right);
+      msg += node.data + ' ';
       // console.log(node);
     }
   }
