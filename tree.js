@@ -12,17 +12,23 @@ class Node {
     this.balanceFactor = 0;
     this.x = width / 2;
     this.y = y;
+    this.highlighted = false;
   }
 
   display() {
-    stroke('white');
-    strokeWeight(3);
     ellipseMode(CENTER);
     textAlign(CENTER);
     textSize(15);
+    stroke('white');
+    strokeWeight(3);
     if (this.left != null) line(this.x, this.y, this.left.x, this.left.y);
     if (this.right != null) line(this.x, this.y, this.right.x, this.right.y);
+    noStroke();
+    fill('red');
+    if (this.highlighted) ellipse(this.x, this.y, 40, 40);
+    fill('white');
     ellipse(this.x, this.y, 30, 30);
+    fill('black');
     text(this.data, this.x, this.y + 5);
   }
 
@@ -143,6 +149,14 @@ class Node {
       this.printPostOrder(node.right);
       msg += node.data + ' ';
       // console.log(node);
+    }
+  }
+
+  static unhighlightAll(node) {
+    if (node !== null) {
+      node.highlighted = false;
+      this.unhighlightAll(node.left);
+      this.unhighlightAll(node.right);
     }
   }
 }

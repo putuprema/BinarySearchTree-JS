@@ -11,6 +11,10 @@ let insertForm;
 let deleteForm;
 let searchForm;
 let msg = '';
+let mode = -1; // set animation mode, 1 for insert, 2 for delete, 3 for search
+let curr = null; // variable for node traversal
+let parentOfCurr = null;
+let value;
 
 function printPreOrder() {
   Node.printPreOrder(root);
@@ -34,23 +38,26 @@ function printPostOrder() {
 }
 
 function insert() {
-  const value = insertForm.value();
+  value = parseInt(insertForm.value(), 10);
   insertForm.value('');
-  if (value == '') return undefined;
-  root = Node.push(root, value, width / 2, 50, null, 'root');
-  if (root.left != null) {
-    Node.updatePosition(root.left);
-  }
-  if (root.right != null) {
-    Node.updatePosition(root.right);
-  }
-  return 0;
+  if (isNaN(value) == true) return undefined;
+  // root = Node.push(root, value, width / 2, 50, null, 'root');
+  // if (root.left != null) {
+  //   Node.updatePosition(root.left);
+  // }
+  // if (root.right != null) {
+  //   Node.updatePosition(root.right);
+  // }
+  // return 0;
+
+  mode = 1;
+  curr = root;
 }
 
 function del() {
   const value = deleteForm.value();
   deleteForm.value('');
-  if (value == '') return undefined;
+  if (isNaN(value) == true) return undefined;
   root = Node.pop(root, value);
   if (root == null) return 0;
   if (root.left != null) {
@@ -63,13 +70,16 @@ function del() {
 }
 
 function find() {
-  const value = searchForm.value();
+  value = parseInt(searchForm.value(), 10);
   searchForm.value('');
-  if (value == '') return undefined;
-  const node = Node.search(root, value);
-  if (node == null) console.log('Element not found');
-  else console.log(node);
-  return 0;
+  if (isNaN(value) == true) return undefined;
+  // const node = Node.search(root, value);
+  // if (node == null) console.log('Element not found');
+  // else console.log(node);
+  // return 0;
+
+  mode = 3;
+  curr = root;
 }
 
 function setup() {
@@ -106,53 +116,84 @@ function setup() {
 
   const canvas = createCanvas(1024, 768);
   canvas.position(0, 110);
-  // for (let i = 0; i < num.length; i += 1) {
-  //   console.log('INSERTING ' + num[i]);
-  //   root = Node.push(root, num[i], width / 2, 50, null, 'root');
-
-  //   if (root.left != null) {
-  //     Node.updatePosition(root.left);
-  //   }
-  //   if (root.right != null) {
-  //     Node.updatePosition(root.right);
-  //   }
-  // }
-
 }
 
 function draw() {
-  frameRate(2);
-  // if (i !== num.length) {
-  //   console.log('INSERTING ' + num[i]);
-  //   root = Node.push(root, num[i], width / 2, 50, null, 'root');
+  frameRate(1);
 
-  //   if (root.left != null) {
-  //     Node.updatePosition(root.left);
-  //   }
-  //   if (root.right != null) {
-  //     Node.updatePosition(root.right);
-  //   }
-  //   i++;
-  // }
-  // if (i === num.length && consolePrinting) {
-  //   console.log('------'); Node.printPreOrder(root); consolePrinting = false;
-  // }
+  if (mode == -1) {
+    Node.unhighlightAll(root);
+    noLoop();
+  }
 
-  // if (i >= 0) {
-  //   console.log('INSERTING ' + num[i]);
-  //   root = Node.pop(root, num[i]);
+  switch (mode) {
+    case 1: {
+      if (root != null && curr != null) curr.highlighted = true;
+      if (parentOfCurr != null) parentOfCurr.highlighted = false;
+      if (curr == null) {
+        msg = 'Found a null node. Inserted ' + value + '.';
+        root = Node.push(root, value, width / 2, 50, null, 'root');
+        mode = -1;
+        curr = null;
+        parentOfCurr = null;
+        if (root.left != null) Node.updatePosition(root.left);
+        if (root.right != null) Node.updatePosition(root.right);
+      }
+      else if (value < curr.data) {
+        msg = value + ' < ' + curr.data + '. Looking at left subtree.';
+        parentOfCurr = curr;
+        curr = curr.left;
+      }
+      else if (value > curr.data) {
+        msg = value + ' > ' + curr.data + '. Looking at right subtree.';
+        parentOfCurr = curr;
+        curr = curr.right;
+      }
+      break;
+    }
+    case 2: {
+      break;
+    }
+    case 3: {
+      if (root == null) {msg = 'Tree is empty'; mode = -1;}
+      else {
+        if (curr != null) curr.highlighted = true;
+        if (parentOfCurr != null) parentOfCurr.highlighted = false;
+        if (curr == null) {
+          msg = 'Searching for ' + value + ' : (Element not found)';
+          mode = -1;
+          curr = null;
+          parentOfCurr = null;
+        }
+        else if (value < curr.data) {
+          msg = 'Searching for ' + value + ' : ' + value + ' < ' + curr.data + '. Looking at left subtree.';
+          parentOfCurr = curr;
+          curr = curr.left;
+        }
+        else if (value > curr.data) {
+          msg = 'Searching for ' + value + ' : ' + value + ' > ' + curr.data + '. Looking at right subtree.';
+          parentOfCurr = curr;
+          curr = curr.right;
+        }
+        else {
+          msg = 'Searching for ' + value + ' : ' + value + ' == ' + curr.data + '. Element found!';
+          mode = -1;
+          curr = null;
+          parentOfCurr = null;
+        }
+      }
+      break;
+    }
+    default: {
+      break;
+    }
+  }
 
-  //   if (root.left != null) {
-  //     Node.updatePosition(root.left);
-  //   }
-  //   if (root.right != null) {
-  //     Node.updatePosition(root.right);
-  //   }
-  //   i--;
-  // }
   background(0);
   Node.display(root);
-  noLoop();
+  fill('white');
+  textAlign(LEFT);
+  text(msg, 30, 50);
 }
 
 function mousePressed() {
