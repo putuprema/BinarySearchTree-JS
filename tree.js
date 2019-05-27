@@ -235,6 +235,7 @@ function updatePosition(node) {
   if (node != null) {
     if (node.loc === 'left') node.x = node.parent.x - ((2 ** (getHeight(node.right) + 1)) * 10);
     else if (node.loc === 'right') node.x = node.parent.x + ((2 ** (getHeight(node.left) + 1)) * 10);
+    if (node.parent != null) node.y = node.parent.y + 40;
     updatePosition(node.left);
     updatePosition(node.right);
   }
