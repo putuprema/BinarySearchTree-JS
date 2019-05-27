@@ -55,19 +55,19 @@ function search(curr, key) {
   if (key < curr.data) { // if key < current node's data then look at the left subtree
     msg = 'Searching for ' + key + ' : ' + key + ' < ' + curr.data + '. Looking at left subtree.';
     self.postMessage([root, msg]);
-    sleep(500);
+    sleep(1000);
     search(curr.left, key);
   }
   else if (key > curr.data) { // if key > current node's data then look at the right subtree
     msg = 'Searching for ' + key + ' : ' + key + ' > ' + curr.data + '. Looking at right subtree.';
     self.postMessage([root, msg]);
-    sleep(500);
+    sleep(1000);
     search(curr.right, key);
   }
   else { // notify the main thread that an element is found and highlight that element
     msg = 'Searching for ' + key + ' : ' + key + ' == ' + curr.data + '. Element found!';
     self.postMessage([root, msg]);
-    sleep(500);
+    sleep(1000);
   }
   return 0;
 }
@@ -212,14 +212,14 @@ function push(node, data, posY, parent, loc, canvasWidth) {
   else if (data < curr.data) { // if new data < current node's data, then go to left subtree
     msg = data + ' < ' + curr.data + '. Looking at left subtree.';
     self.postMessage([root, msg]);
-    sleep(300);
+    sleep(1000);
     curr.highlighted = false;
     curr.left = push(curr.left, data, posY + 40, curr, 'left', canvasWidth);
   }
   else if (data > curr.data) { // if new data > current node's data, then go to right subtree
     msg = data + ' > ' + curr.data + '. Looking at right subtree.';
     self.postMessage([root, msg]);
-    sleep(300);
+    sleep(1000);
     curr.highlighted = false;
     curr.right = push(curr.right, data, posY + 40, curr, 'right', canvasWidth);
   }
@@ -247,21 +247,21 @@ function printPreOrder(node) {
     node.highlighted = true;
     msg = node.data;
     self.postMessage([root, msg + ' ']);
-    sleep(500);
+    sleep(1000);
 
     printPreOrder(node.left);
 
     unhighlightAll(root);
     node.highlighted = true;
     self.postMessage([root, '']);
-    sleep(500);
+    sleep(1000);
 
     printPreOrder(node.right);
 
     unhighlightAll(root);
     node.highlighted = true;
     self.postMessage([root, '']);
-    sleep(500);
+    sleep(1000);
   }
 }
 
@@ -271,7 +271,7 @@ function printInOrder(node) {
     unhighlightAll(root);
     node.highlighted = true;
     self.postMessage([root, '']);
-    sleep(500);
+    sleep(1000);
 
     printInOrder(node.left);
 
@@ -280,14 +280,14 @@ function printInOrder(node) {
     unhighlightAll(root);
     node.highlighted = true;
     self.postMessage([root, '']);
-    sleep(500);
+    sleep(1000);
 
     printInOrder(node.right);
 
     unhighlightAll(root);
     node.highlighted = true;
     self.postMessage([root, '']);
-    sleep(500);
+    sleep(1000);
   }
 }
 
@@ -297,14 +297,14 @@ function printPostOrder(node) {
     unhighlightAll(root);
     node.highlighted = true;
     self.postMessage([root, '']);
-    sleep(500);
+    sleep(1000);
 
     printPostOrder(node.left);
 
     unhighlightAll(root);
     node.highlighted = true;
     self.postMessage([root, '']);
-    sleep(500);
+    sleep(1000);
 
     printPostOrder(node.right);
 
@@ -312,7 +312,7 @@ function printPostOrder(node) {
     unhighlightAll(root);
     node.highlighted = true;
     self.postMessage([root, msg + ' ']);
-    sleep(500);
+    sleep(1000);
   }
 }
 
