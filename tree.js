@@ -1,8 +1,13 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable no-lonely-if */
 /* eslint-disable no-else-return */
 /* eslint-disable brace-style */
+
+let root = null;
+let msg = '';
+
 class Node {
-  constructor(data, height, x, y, parent, loc) {
+  constructor(data, height, y, parent, loc, canvasWidth) {
     this.data = data;
     this.left = null;
     this.right = null;
@@ -10,139 +15,377 @@ class Node {
     this.loc = loc;
     this.height = height;
     this.balanceFactor = 0;
-    this.x = width / 2;
+    this.x = canvasWidth / 2;
     this.y = y;
-  }
-
-  display() {
-    stroke('white');
-    strokeWeight(3);
-    ellipseMode(CENTER);
-    textAlign(CENTER);
-    textSize(15);
-    if (this.left != null) line(this.x, this.y, this.left.x, this.left.y);
-    if (this.right != null) line(this.x, this.y, this.right.x, this.right.y);
-    ellipse(this.x, this.y, 30, 30);
-    text(this.data, this.x, this.y + 5);
-  }
-
-  static display(curr) {
-    if (curr != null) {
-      curr.display();
-      Node.display(curr.left);
-      Node.display(curr.right);
-    }
-  }
-
-  static search(curr, key) {
-    if (curr == null) return null;
-    if (key < curr.data) return Node.search(curr.left, key);
-    else if (key > curr.data) return Node.search(curr.right, key);
-    else return curr;
-  }
-
-  static pop(startingNode, key) {
-    let node = startingNode;
-    if (!node) {console.log('specified number does not exist'); return null;}
-    else {
-      if (key < node.data) node.left = Node.pop(node.left, key);
-      else if (key > node.data) node.right = Node.pop(node.right, key);
-      else {
-        if (!node.left && !node.right) {
-          node = null;
-        }
-        else if (!node.left) { // if node has RIGHT child
-          let del = node;
-          node = node.right;
-          del = null;
-          node.y -= 40;
-        }
-        else if (!node.right) { // if node has LEFT child
-          let del = node;
-          node = node.left;
-          del = null;
-          node.y -= 40;
-        }
-        else { // if node has TWO children
-          let largestLeft = node.left;
-          while (largestLeft.right) largestLeft = largestLeft.right;
-          node.data = largestLeft.data;
-          node.left = Node.pop(node.left, largestLeft.data);
-        }
-      }
-    }
-    if (node == null) return node;
-
-    node.height = Math.max(Node.getHeight(node.left), Node.getHeight(node.right)) + 1;
-
-    return node;
-  }
-
-  static getHeight(node) {
-    if (node == null) return 0;
-    return node.height;
-  }
-
-  static push(node, data, posX, posY, parent, loc) {
-    let curr = node;
-
-    if (curr == null) {
-      curr = new Node(data, 1, posX, posY, parent, loc);
-    }
-    else if (data < curr.data) {
-      curr.left = Node.push(curr.left, data, posX, posY + 40, curr, 'left');
-    }
-    else if (data > curr.data) {
-      curr.right = Node.push(curr.right, data, posX, posY + 40, curr, 'right');
-    }
-
-    curr.height = Math.max(Node.getHeight(curr.left), Node.getHeight(curr.right)) + 1;
-
-    return curr;
-
-  }
-
-  static updatePosition(node) {
-    if (node != null) {
-      if (node.loc == 'left') {
-        console.log('updating node ' + node.data + ' position');
-        console.log(node.data + '.x = ' + node.parent.data + '.x ' + ' - (2 ^ '  + (Node.getHeight(node.right) + 1) + ' * 10)');
-        node.x = node.parent.x - (pow(2, Node.getHeight(node.right) + 1) * 10);
-      }
-      else if (node.loc == 'right') {
-        console.log('updating node ' + node.data + ' position');
-        console.log(node.data + '.x = ' + node.parent.data + '.x ' + ' + (2 ^ '  + (Node.getHeight(node.left) + 1) + ' * 10)');
-        node.x = node.parent.x + (pow(2, Node.getHeight(node.left) + 1) * 10);
-      }
-      Node.updatePosition(node.left);
-      Node.updatePosition(node.right);
-    }
-  }
-
-  static printPreOrder(node) {
-    if (node !== null) {
-      // console.log(node);
-      msg += node.data + ' ';
-      this.printPreOrder(node.left);
-      this.printPreOrder(node.right);
-    }
-  }
-
-  static printInOrder(node) {
-    if (node !== null) {
-      this.printInOrder(node.left);
-      // console.log(node);
-      msg += node.data + ' ';
-      this.printInOrder(node.right);
-    }
-  }
-
-  static printPostOrder(node) {
-    if (node !== null) {
-      this.printPostOrder(node.left);
-      this.printPostOrder(node.right);
-      msg += node.data + ' ';
-      // console.log(node);
-    }
+    this.highlighted = false;
   }
 }
+
+// DELAY CODE EXECUTION FOR SPECIFIED MILLISECONDS
+function sleep(ms) {
+  const start = Date.now();
+  while (Date.now() < start + ms);
+}
+
+// UNHIGHLIGHT ALL NODES
+function unhighlightAll(node) {
+  if (node !== null) {
+    node.highlighted = false;
+    unhighlightAll(node.left);
+    unhighlightAll(node.right);
+  }
+}
+
+// GET CURRENT HEIGHT/LEVEL OF A NODE
+function getHeight(node) {
+  if (node == null) return 0;
+  return node.height;
+}
+
+// SEARCH AN ELEMENT IN THE TREE
+function search(curr, key) {
+  if (!curr) { // if current node is null then element does not exist in the tree
+    msg = 'Searching for ' + key + ' : (Element not found)';
+    self.postMessage([root, msg]);
+    return 0;
+  }
+  unhighlightAll(root);
+  curr.highlighted = true;
+  self.postMessage([root, msg]);
+  if (key < curr.data) { // if key < current node's data then look at the left subtree
+    msg = 'Searching for ' + key + ' : ' + key + ' < ' + curr.data + '. Looking at left subtree.';
+    self.postMessage([root, msg]);
+    sleep(500);
+    search(curr.left, key);
+  }
+  else if (key > curr.data) { // if key > current node's data then look at the right subtree
+    msg = 'Searching for ' + key + ' : ' + key + ' > ' + curr.data + '. Looking at right subtree.';
+    self.postMessage([root, msg]);
+    sleep(500);
+    search(curr.right, key);
+  }
+  else { // notify the main thread that an element is found and highlight that element
+    msg = 'Searching for ' + key + ' : ' + key + ' == ' + curr.data + '. Element found!';
+    self.postMessage([root, msg]);
+    sleep(500);
+  }
+  return 0;
+}
+
+// DELETE AN ELEMENT FROM THE TREE
+function pop(startingNode, key) {
+  let node = startingNode;
+  if (!node) { // if current node is null then element to delete does not exist in the tree
+    msg = 'Searching for ' + key + ' : (Element not found)';
+    self.postMessage([root, msg]);
+    return null;
+  }
+  else {
+    unhighlightAll(root);
+    node.highlighted = true;
+    self.postMessage([root, msg]);
+    if (key < node.data) { // if key < current node's data then look at the left subtree
+      msg = 'Searching for ' + key + ' : ' + key + ' < ' + node.data + '. Looking at left subtree.';
+      self.postMessage([root, msg]);
+      sleep(1000);
+      node.left = pop(node.left, key);
+    }
+    else if (key > node.data) { // if key > current node's data then look at the right subtree
+      msg = 'Searching for ' + key + ' : ' + key + ' > ' + node.data + '. Looking at right subtree.';
+      self.postMessage([root, msg]);
+      sleep(1000);
+      node.right = pop(node.right, key);
+    }
+    else {
+      msg = key + ' == ' + node.data + '. Found node to delete.'; // notify the main thread that node to delete is found.
+      self.postMessage([root, msg]);
+      sleep(1000);
+      if (!node.left && !node.right) { // if node has no child (is a leaf) then just delete it.
+        msg = 'Node to delete is a leaf. Delete it.';
+        node = null;
+        self.postMessage([root, msg]);
+      }
+      else if (!node.left) { // if node has RIGHT child then set parent of deleted node to right child of deleted node
+        msg = 'Node to delete has no left child.\nSet parent of deleted node to right child of deleted node';
+        self.postMessage([root, msg]);
+        sleep(1000);
+        // CODE FOR BLINKING ANIMATION AND BLA BLA BLA..
+        for (let i = 0; i < 2; i += 1) {
+          node.right.highlighted = true;
+          node.parent.highlighted = true;
+          self.postMessage([root, msg]);
+          sleep(500);
+          node.right.highlighted = false;
+          node.parent.highlighted = false;
+          self.postMessage([root, msg]);
+          sleep(500);
+        }
+        // END CODE FOR BLINKING ANIMATION AND BLA BLA BLA..
+        let del = node;
+        node.right.parent = node.parent;
+        node.right.loc = node.loc;
+        node = node.right;
+        del = null;
+        node.y -= 40;
+      }
+      else if (!node.right) { // if node has LEFT child then set parent of deleted node to left child of deleted node
+        msg = 'Node to delete has no right child.\nSet parent of deleted node to left child of deleted node';
+        self.postMessage([root, msg]);
+        sleep(1000);
+        for (let i = 0; i < 2; i += 1) {
+          node.left.highlighted = true;
+          node.parent.highlighted = true;
+          self.postMessage([root, msg]);
+          sleep(500);
+          node.left.highlighted = false;
+          node.parent.highlighted = false;
+          self.postMessage([root, msg]);
+          sleep(500);
+        }
+        let del = node;
+        node.left.parent = node.parent;
+        node.left.loc = node.loc;
+        node = node.left;
+        del = null;
+        node.y -= 40;
+      }
+      else { // if node has TWO children then find largest node in the left subtree. Copy the value of it into node to delete. After that, recursively delete the largest node in the left subtree
+        msg = 'Node to delete has two children.\nFind largest node in left subtree.';
+        self.postMessage([root, msg]);
+        sleep(1000);
+        let largestLeft = node.left;
+        while (largestLeft.right) {
+          unhighlightAll(root);
+          largestLeft.highlighted = true;
+          self.postMessage([root, msg]);
+          sleep(500);
+          largestLeft = largestLeft.right;
+        }
+        unhighlightAll(root);
+        largestLeft.highlighted = true;
+        msg = 'Largest node in left subtree is ' + largestLeft.data + '.\nCopy largest value of left subtree into node to delete.';
+        self.postMessage([root, msg]);
+        sleep(1000);
+        // CODE FOR BLINKING ANIMATION AND BLA BLA BLA...
+        for (let i = 0; i < 2; i += 1) {
+          largestLeft.highlighted = true;
+          node.highlighted = true;
+          self.postMessage([root, msg]);
+          sleep(500);
+          largestLeft.highlighted = false;
+          node.highlighted = false;
+          self.postMessage([root, msg]);
+          sleep(500);
+        }
+        // END CODE FOR BLINKING ANIMATION AND BLA BLA BLA...
+        node.data = largestLeft.data;
+        unhighlightAll(root);
+        self.postMessage([root, msg]);
+        sleep(1000);
+        msg = 'Recursively delete largest node in left subtree';
+        self.postMessage([root, msg]);
+        sleep(1000);
+        node.left = pop(node.left, largestLeft.data);
+      }
+    }
+  }
+  if (node == null) return node;
+
+  node.height = Math.max(getHeight(node.left), getHeight(node.right)) + 1; // update the heights of all nodes traversed by the pop() function
+
+  return node; // return the modifications back to the caller
+}
+
+// INSERT AN ELEMENT TO THE TREE
+function push(node, data, posY, parent, loc, canvasWidth) {
+  let curr = node;
+
+  if (curr != null) { // highlight current node in each recursion step
+    curr.highlighted = true;
+    self.postMessage([root, msg]);
+  }
+
+  if (curr == null) { // if current node is null then place the new node there
+    msg = 'Found a null node. Inserted ' + data + '.';
+    curr = new Node(data, 1, posY, parent, loc, canvasWidth);
+  }
+  else if (data < curr.data) { // if new data < current node's data, then go to left subtree
+    msg = data + ' < ' + curr.data + '. Looking at left subtree.';
+    self.postMessage([root, msg]);
+    sleep(300);
+    curr.highlighted = false;
+    curr.left = push(curr.left, data, posY + 40, curr, 'left', canvasWidth);
+  }
+  else if (data > curr.data) { // if new data > current node's data, then go to right subtree
+    msg = data + ' > ' + curr.data + '. Looking at right subtree.';
+    self.postMessage([root, msg]);
+    sleep(300);
+    curr.highlighted = false;
+    curr.right = push(curr.right, data, posY + 40, curr, 'right', canvasWidth);
+  }
+
+  curr.height = Math.max(getHeight(curr.left), getHeight(curr.right)) + 1; // update the heights of all nodes traversed by the push() function
+
+  return curr; // return the modifications back to the caller
+}
+
+// AFTER INSERT OR DELETE, ALWAYS UPDATE ALL NODES POSITION IN THE CANVAS
+// FORMULA FOR DETERMINING NODE POSITION IS: (NODE'S PARENT POSITION - ((2 ^ (NODE'S CURRENT HEIGHT + 1)) * 10)))
+function updatePosition(node) {
+  if (node != null) {
+    if (node.loc === 'left') node.x = node.parent.x - ((2 ** (getHeight(node.right) + 1)) * 10);
+    else if (node.loc === 'right') node.x = node.parent.x + ((2 ** (getHeight(node.left) + 1)) * 10);
+    updatePosition(node.left);
+    updatePosition(node.right);
+  }
+}
+
+// PRINT ALL NODES PRE-ORDERLY. THE ROUTE IS C - L - R
+function printPreOrder(node) {
+  if (node !== null) {
+    unhighlightAll(root);
+    node.highlighted = true;
+    msg = node.data;
+    self.postMessage([root, msg + ' ']);
+    sleep(500);
+
+    printPreOrder(node.left);
+
+    unhighlightAll(root);
+    node.highlighted = true;
+    self.postMessage([root, '']);
+    sleep(500);
+
+    printPreOrder(node.right);
+
+    unhighlightAll(root);
+    node.highlighted = true;
+    self.postMessage([root, '']);
+    sleep(500);
+  }
+}
+
+// PRINT ALL NODES IN-ORDERLY. THE ROUTE IS L - C - R
+function printInOrder(node) {
+  if (node !== null) {
+    unhighlightAll(root);
+    node.highlighted = true;
+    self.postMessage([root, '']);
+    sleep(500);
+
+    printInOrder(node.left);
+
+    msg = node.data;
+    self.postMessage([root, msg + ' ']);
+    unhighlightAll(root);
+    node.highlighted = true;
+    self.postMessage([root, '']);
+    sleep(500);
+
+    printInOrder(node.right);
+
+    unhighlightAll(root);
+    node.highlighted = true;
+    self.postMessage([root, '']);
+    sleep(500);
+  }
+}
+
+// PRINT ALL NODES POST-ORDERLY. THE ROUTE IS L - R - C
+function printPostOrder(node) {
+  if (node !== null) {
+    unhighlightAll(root);
+    node.highlighted = true;
+    self.postMessage([root, '']);
+    sleep(500);
+
+    printPostOrder(node.left);
+
+    unhighlightAll(root);
+    node.highlighted = true;
+    self.postMessage([root, '']);
+    sleep(500);
+
+    printPostOrder(node.right);
+
+    msg = node.data;
+    unhighlightAll(root);
+    node.highlighted = true;
+    self.postMessage([root, msg + ' ']);
+    sleep(500);
+  }
+}
+
+// EVENT LISTENER TO LISTEN COMMANDS FROM THE MAIN THREAD. THE TREE WILL EXECUTE EVERYTHING THE MAIN THREAD WANTS.
+// AT EACH STEP IN THE ALGORITHM. THE TREE WILL NOTIFY THE MAIN THREAD ABOUT CHANGES IN THE TREE SO THE MAIN THREAD CAN DISPLAY THE CHANGES STEP-BY-STEP TO USERS FOR EASIER UNDESTANDING
+self.addEventListener('message', (event) => {
+  switch (event.data[0]) {
+    case 'Insert': {
+      const value = event.data[1];
+      const canvasWidth = event.data[2];
+      root = push(root, value, 50, null, 'root', canvasWidth);
+      updatePosition(root);
+      self.postMessage([root, msg]);
+      break;
+    }
+    case 'Delete': {
+      const key = event.data[1];
+      if (root == null) {
+        self.postMessage([root, 'Tree is empty']);
+      }
+      else {
+        root = pop(root, key);
+        updatePosition(root);
+        unhighlightAll(root);
+        self.postMessage([root, msg]);
+      }
+      break;
+    }
+    case 'Find': {
+      const key = event.data[1];
+      if (root == null) {
+        self.postMessage([root, 'Tree is empty']);
+      }
+      else {
+        search(root, key);
+        unhighlightAll(root);
+        self.postMessage([root, msg]);
+      }
+      break;
+    }
+    case 'Print Pre Order': {
+      if (root == null) {
+        self.postMessage([root, 'Tree is empty']);
+      }
+      else {
+        printPreOrder(root);
+        unhighlightAll(root);
+        self.postMessage([root, '']);
+      }
+      break;
+    }
+    case 'Print In Order': {
+      if (root == null) {
+        self.postMessage([root, 'Tree is empty']);
+      }
+      else {
+        printInOrder(root);
+        unhighlightAll(root);
+        self.postMessage([root, '']);
+      }
+      break;
+    }
+    case 'Print Post Order': {
+      if (root == null) {
+        self.postMessage([root, 'Tree is empty']);
+      }
+      else {
+        printPostOrder(root);
+        unhighlightAll(root);
+        self.postMessage([root, '']);
+      }
+      break;
+    }
+    default: break;
+  }
+});
