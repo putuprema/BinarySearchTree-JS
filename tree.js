@@ -4,21 +4,45 @@
 /* eslint-disable brace-style */
 
 let root = null;
+let lastState = null;
 let msg = '';
 
 class Node {
-  constructor(data, height, y, parent, loc, canvasWidth) {
-    this.data = data;
-    this.left = null;
-    this.right = null;
-    this.parent = parent;
-    this.loc = loc;
-    this.height = height;
-    this.balanceFactor = 0;
-    this.x = canvasWidth / 2;
-    this.y = y;
-    this.highlighted = false;
+  constructor(d, height, y, parent, loc, canvasWidth) {
+    if (d instanceof Node) { // if parameter passed is a node then use all properties of the node to be cloned
+      this.data = d.data;
+      this.left = d.left;
+      this.right = d.right;
+      this.parent = d.parent;
+      this.loc = d.loc;
+      this.height = d.height;
+      this.balanceFactor = d.balanceFactor;
+      this.x = d.x;
+      this.y = d.y;
+      this.highlighted = d.highlighted;
+    }
+    else {
+      this.data = d;
+      this.left = null;
+      this.right = null;
+      this.parent = parent;
+      this.loc = loc;
+      this.height = height;
+      this.balanceFactor = 0;
+      this.x = canvasWidth / 2;
+      this.y = y;
+      this.highlighted = false;
+    }
   }
+}
+
+// CLONE THE CURRENT TREE INCLUDING ITS CHILD AND THE CHILD OF ITS CHILD AND SO ON..
+function treeClone(node) {
+  if (node == null) return null;
+  const neww = new Node(node);
+  neww.left = treeClone(node.left);
+  neww.right = treeClone(node.right);
+  return neww;
 }
 
 // DELAY CODE EXECUTION FOR SPECIFIED MILLISECONDS
@@ -236,6 +260,8 @@ function updatePosition(node) {
     if (node.loc === 'left') node.x = node.parent.x - ((2 ** (getHeight(node.right) + 1)) * 10);
     else if (node.loc === 'right') node.x = node.parent.x + ((2 ** (getHeight(node.left) + 1)) * 10);
     if (node.parent != null) node.y = node.parent.y + 40;
+    if (node.left != null) node.left.parent = node; // update parent information of current node
+    if (node.right != null) node.right.parent = node; // update parent information of current node
     updatePosition(node.left);
     updatePosition(node.right);
   }
@@ -322,6 +348,7 @@ function printPostOrder(node) {
 self.addEventListener('message', (event) => {
   switch (event.data[0]) {
     case 'Insert': {
+      lastState = treeClone(root);
       const value = event.data[1];
       const canvasWidth = event.data[2];
       root = push(root, value, 50, null, 'root', canvasWidth);
@@ -330,6 +357,7 @@ self.addEventListener('message', (event) => {
       break;
     }
     case 'Delete': {
+      lastState = treeClone(root);
       const key = event.data[1];
       if (root == null) {
         self.postMessage([root, 'Tree is empty']);
@@ -385,6 +413,12 @@ self.addEventListener('message', (event) => {
         unhighlightAll(root);
         self.postMessage([root, '']);
       }
+      break;
+    }
+    case 'Undo': {
+      root = treeClone(lastState);
+      updatePosition(root);
+      self.postMessage([root, '']);
       break;
     }
     default: break;

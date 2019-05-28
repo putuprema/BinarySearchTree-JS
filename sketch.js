@@ -13,10 +13,21 @@ let tree = null;
 let insertForm;
 let deleteForm;
 let searchForm;
+let undoButton;
 let lastMsg = '';
 let value;
 let worker;
 let payload;
+
+function undo() {
+  payload = ['Undo'];
+  worker.postMessage(payload);
+  worker.onmessage = function (event) {
+    tree = event.data[0];
+    lastMsg = event.data[1];
+  }
+  undoButton.attribute('disabled', ''); // disabled undo button after use.
+}
 
 function displayNode(curr) {
   if (curr != null) {
@@ -81,6 +92,7 @@ function insert() {
     tree = event.data[0]; // receive our tree modifications from the worker thread so the browser's main thread can display changes at each step in the algo instead of the final change
     lastMsg = event.data[1]; // also receive message from the worker thread after each step in the algorithm is done
   };
+  undoButton.removeAttribute('disabled'); // enable undo button after insert operation
   return 0;
 }
 
@@ -94,6 +106,7 @@ function del() {
     tree = event.data[0]; // receive our tree modifications from the worker thread so the browser's main thread can display changes at each step in the algo instead of the final change
     lastMsg = event.data[1]; // also receive message from the worker thread after each step in the algorithm is done
   };
+  undoButton.removeAttribute('disabled'); // enable undo button after delete operation
   return 0;
 }
 
@@ -153,6 +166,13 @@ function setup() {
   printPostOrderButton.position(printInOrderButton.x + printInOrderButton.width + 10, 70);
   printPostOrderButton.mousePressed(printPostOrder);
   // END PRINT BUTTONS
+
+  // BEGIN UNDO BUTTON TO REVERT TO PREVIOUS STATE
+  undoButton = createButton('Undo');
+  undoButton.position(printPostOrderButton.x + printPostOrderButton.width + 10, 70);
+  undoButton.mousePressed(undo);
+  undoButton.attribute('disabled', '');
+  // END UNDO BUTTON TO REVERT TO PREVIOUS STATE
 
   // SET CANVAS AND TEXT SIZE
   const canvas = createCanvas(1024, 500);
