@@ -21,6 +21,7 @@ let printPreOrderButton;
 let printPostOrderButton;
 let undoButton;
 let lastMsg = '';
+let printOutput = '';
 let value;
 let worker;
 let payload;
@@ -84,12 +85,14 @@ function displayNode(curr) {
 function printPreOrder() {
   disableUI();
   lastMsg = '';
+  printOutput = '';
   payload = ['Print Pre Order'];
   worker.postMessage(payload); // send message 'Print Pre Order' to the worker thread to print all elements pre-orderly
   worker.onmessage = function (event) {
     tree = event.data[0];
-    lastMsg += event.data[1];
-    if (event.data[2] === 'Finished') enableUI();
+    lastMsg = event.data[1];
+    printOutput += event.data[2]; 
+    if (event.data[3] === 'Finished') enableUI();
   };
   return 0;
 }
@@ -97,12 +100,14 @@ function printPreOrder() {
 function printInOrder() {
   disableUI();
   lastMsg = '';
+  printOutput = '';
   payload = ['Print In Order'];
   worker.postMessage(payload); // send message 'Print In Order' to the worker thread to print all elements in-orderly
   worker.onmessage = function (event) {
     tree = event.data[0];
-    lastMsg += event.data[1];
-    if (event.data[2] === 'Finished') enableUI();
+    lastMsg = event.data[1];
+    printOutput += event.data[2]; 
+    if (event.data[3] === 'Finished') enableUI();
   };
   return 0;
 }
@@ -110,12 +115,14 @@ function printInOrder() {
 function printPostOrder() {
   disableUI();
   lastMsg = '';
+  printOutput = '';
   payload = ['Print Post Order'];
   worker.postMessage(payload); // send message 'Print Post Order' to the worker thread to print all elements post-orderly
   worker.onmessage = function (event) {
     tree = event.data[0];
-    lastMsg += event.data[1];
-    if (event.data[2] === 'Finished') enableUI();
+    lastMsg = event.data[1];
+    printOutput += event.data[2]; 
+    if (event.data[3] === 'Finished') enableUI();
   };
   return 0;
 }
@@ -234,4 +241,5 @@ function draw() {
   fill('white');
   textAlign(LEFT);
   text(lastMsg, 30, 50);
+  text(printOutput, 30, 70);
 }

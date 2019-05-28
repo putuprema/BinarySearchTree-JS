@@ -6,6 +6,7 @@
 let root = null;
 let lastState = null;
 let msg = '';
+let printOutput = '';
 
 class Node {
   constructor(d, height, y, parent, loc, canvasWidth) {
@@ -272,22 +273,33 @@ function printPreOrder(node) {
   if (node !== null) {
     unhighlightAll(root);
     node.highlighted = true;
-    msg = node.data;
-    self.postMessage([root, msg + ' ', '']);
+    msg = 'Printing the value';
+    printOutput = node.data;
+    self.postMessage([root, msg, printOutput + ' ', '']);
+    sleep(1000);
+    msg = 'Going to left subtree';
+    self.postMessage([root, msg, '', '']);
     sleep(1000);
 
     printPreOrder(node.left);
 
     unhighlightAll(root);
     node.highlighted = true;
-    self.postMessage([root, '', '']);
+    msg = 'Going to right subtree';
+    self.postMessage([root, msg, '', '']);
     sleep(1000);
 
     printPreOrder(node.right);
 
     unhighlightAll(root);
     node.highlighted = true;
-    self.postMessage([root, '', '']);
+    msg = 'Going back up';
+    self.postMessage([root, msg, '', '']);
+    sleep(1000);
+  }
+  else {
+    msg += '... NULL';
+    self.postMessage([root, msg, '', '']);
     sleep(1000);
   }
 }
@@ -297,23 +309,33 @@ function printInOrder(node) {
   if (node !== null) {
     unhighlightAll(root);
     node.highlighted = true;
-    self.postMessage([root, '', '']);
+    msg = 'Going to left subtree';
+    self.postMessage([root, msg, '', '']);
     sleep(1000);
 
     printInOrder(node.left);
 
-    msg = node.data;
-    self.postMessage([root, msg + ' ', '']);
+    msg = 'Printing the value';
+    printOutput = node.data;
     unhighlightAll(root);
     node.highlighted = true;
-    self.postMessage([root, '', '']);
+    self.postMessage([root, msg, printOutput + ' ', '']);
+    sleep(1000);
+    msg = 'Going the right subtree';
+    self.postMessage([root, msg, '', '']);
     sleep(1000);
 
     printInOrder(node.right);
 
     unhighlightAll(root);
     node.highlighted = true;
-    self.postMessage([root, '', '']);
+    msg = 'Going back up';
+    self.postMessage([root, msg, '', '']);
+    sleep(1000);
+  }
+  else {
+    msg += '... NULL';
+    self.postMessage([root, msg, '', '']);
     sleep(1000);
   }
 }
@@ -323,22 +345,33 @@ function printPostOrder(node) {
   if (node !== null) {
     unhighlightAll(root);
     node.highlighted = true;
-    self.postMessage([root, '', '']);
+    msg = 'Going to left subtree';
+    self.postMessage([root, msg, '', '']);
     sleep(1000);
 
     printPostOrder(node.left);
 
     unhighlightAll(root);
     node.highlighted = true;
-    self.postMessage([root, '', '']);
+    msg = 'Going to right subtree';
+    self.postMessage([root, msg, '', '']);
     sleep(1000);
 
     printPostOrder(node.right);
 
-    msg = node.data;
+    msg = 'Printing the value';
+    printOutput = node.data;
     unhighlightAll(root);
     node.highlighted = true;
-    self.postMessage([root, msg + ' ', '']);
+    self.postMessage([root, msg, printOutput + ' ', '']);
+    sleep(1000);
+    msg = 'Going back up';
+    self.postMessage([root, msg, '', '']);
+    sleep(1000);    
+  }
+  else {
+    msg += '... NULL';
+    self.postMessage([root, msg, '', '']);
     sleep(1000);
   }
 }
@@ -384,34 +417,34 @@ self.addEventListener('message', (event) => {
     }
     case 'Print Pre Order': {
       if (root == null) {
-        self.postMessage([root, 'Tree is empty', 'Finished']);
+        self.postMessage([root, 'Tree is empty', '', 'Finished']);
       }
       else {
         printPreOrder(root);
         unhighlightAll(root);
-        self.postMessage([root, '', 'Finished']);
+        self.postMessage([root, 'Print Finished', '', 'Finished']);
       }
       break;
     }
     case 'Print In Order': {
       if (root == null) {
-        self.postMessage([root, 'Tree is empty', 'Finished']);
+        self.postMessage([root, 'Tree is empty', '', 'Finished']);
       }
       else {
         printInOrder(root);
         unhighlightAll(root);
-        self.postMessage([root, '', 'Finished']);
+        self.postMessage([root, 'Print Finished', '', 'Finished']);
       }
       break;
     }
     case 'Print Post Order': {
       if (root == null) {
-        self.postMessage([root, 'Tree is empty', 'Finished']);
+        self.postMessage([root, 'Tree is empty', '', 'Finished']);
       }
       else {
         printPostOrder(root);
         unhighlightAll(root);
-        self.postMessage([root, '', 'Finished']);
+        self.postMessage([root, 'Print Finished', '', 'Finished']);
       }
       break;
     }
