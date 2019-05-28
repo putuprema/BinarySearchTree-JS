@@ -128,10 +128,10 @@ function printPostOrder() {
 }
 
 function insert() {
-  disableUI();
   value = parseInt(insertForm.value(), 10);
   insertForm.value('');
   if (isNaN(value) === true) return undefined;
+  disableUI();
   payload = ['Insert', value, width];
   worker.postMessage(payload); // send message 'Insert', inputted value and canvas width to ask the Tree to insert new element
   worker.onmessage = function (event) {
@@ -146,10 +146,10 @@ function insert() {
 }
 
 function del() {
-  disableUI();
   value = parseInt(deleteForm.value(), 10);
   deleteForm.value('');
   if (isNaN(value) === true) return undefined;
+  disableUI();
   payload = ['Delete', value];
   worker.postMessage(payload); // send message 'Delete' and inputted value to ask the Tree to delete an element
   worker.onmessage = function (event) {
@@ -164,10 +164,10 @@ function del() {
 }
 
 function find() {
-  disableUI();
   value = parseInt(searchForm.value(), 10);
   searchForm.value('');
   if (isNaN(value) === true) return undefined;
+  disableUI();
   payload = ['Find', value];
   worker.postMessage(payload); // send message 'Find' and inputted value to ask the Tree to find an element
   worker.onmessage = function (event) {
