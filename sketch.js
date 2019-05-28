@@ -128,6 +128,8 @@ function printPostOrder() {
 }
 
 function insert() {
+  lastMsg = '';
+  printOutput = '';
   value = parseInt(insertForm.value(), 10);
   insertForm.value('');
   if (isNaN(value) === true) return undefined;
@@ -146,6 +148,8 @@ function insert() {
 }
 
 function del() {
+  lastMsg = '';
+  printOutput = '';
   value = parseInt(deleteForm.value(), 10);
   deleteForm.value('');
   if (isNaN(value) === true) return undefined;
@@ -164,6 +168,8 @@ function del() {
 }
 
 function find() {
+  lastMsg = '';
+  printOutput = '';
   value = parseInt(searchForm.value(), 10);
   searchForm.value('');
   if (isNaN(value) === true) return undefined;
