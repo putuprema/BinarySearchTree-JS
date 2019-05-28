@@ -1,5 +1,34 @@
-/* eslint-disable func-names */
+/* -------------------------------------------------------------------------------
+This code is licensed under MIT License.
+
+Copyright (c) 2019 I Putu Prema Ananda D.N
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+---------------------------------------------------------------------------------- */
+
+/* eslint-disable no-restricted-globals */
 /* eslint-disable prefer-destructuring */
+/* eslint-disable no-param-reassign */
+/* eslint-disable no-lonely-if */
+/* eslint-disable no-else-return */
+/* eslint-disable brace-style */
+/* eslint-disable func-names */
 
 // BEGIN PREDEFINED DATASETS
 /* TODO: enable users to autofill tree with one of these datasets */
@@ -10,6 +39,8 @@
 // END PREDEFINED DATASETS
 
 let tree = null;
+let controlDiv;
+let controlBar;
 let insertForm;
 let insertButton;
 let deleteForm;
@@ -20,10 +51,12 @@ let printInOrderButton;
 let printPreOrderButton;
 let printPostOrderButton;
 let undoButton;
+let animationSpeedSliderLabel;
+let animationSpeedSlider;
 let lastMsg = '';
 let printOutput = '';
 let value;
-let worker;
+let BST;
 let payload;
 
 function enableUI() {
@@ -37,6 +70,7 @@ function enableUI() {
   printInOrderButton.removeAttribute('disabled');
   printPostOrderButton.removeAttribute('disabled');
   undoButton.removeAttribute('disabled');
+  animationSpeedSlider.removeAttribute('disabled');
 }
 
 function disableUI() {
@@ -50,15 +84,22 @@ function disableUI() {
   printInOrderButton.attribute('disabled', '');
   printPostOrderButton.attribute('disabled', '');
   undoButton.attribute('disabled', '');
+  animationSpeedSlider.attribute('disabled', '');
+}
+
+function setAnimSpeed() {
+  const animDelay = Math.abs(animationSpeedSlider.value());
+  payload = ['Set Animation Speed', animDelay];
+  BST.postMessage(payload);
 }
 
 function undo() {
   payload = ['Undo'];
-  worker.postMessage(payload);
-  worker.onmessage = function (event) {
+  BST.postMessage(payload);
+  BST.onmessage = function (event) {
     tree = event.data[0];
     lastMsg = event.data[1];
-  }
+  };
   undoButton.attribute('disabled', ''); // disabled undo button after use.
 }
 
@@ -66,14 +107,14 @@ function displayNode(curr) {
   if (curr != null) {
     ellipseMode(CENTER);
     textAlign(CENTER);
-    stroke('white');
+    stroke('black');
     strokeWeight(3);
     if (curr.left != null) line(curr.x, curr.y, curr.left.x, curr.left.y);
     if (curr.right != null) line(curr.x, curr.y, curr.right.x, curr.right.y);
     noStroke();
     fill('red');
     if (curr.highlighted) ellipse(curr.x, curr.y, 40, 40);
-    fill('white');
+    fill(231, 173, 173);
     ellipse(curr.x, curr.y, 30, 30);
     fill('black');
     text(curr.data, curr.x, curr.y + 5);
@@ -87,11 +128,11 @@ function printPreOrder() {
   lastMsg = '';
   printOutput = '';
   payload = ['Print Pre Order'];
-  worker.postMessage(payload); // send message 'Print Pre Order' to the worker thread to print all elements pre-orderly
-  worker.onmessage = function (event) {
+  BST.postMessage(payload); // send message 'Print Pre Order' to the BST thread to print all elements pre-orderly
+  BST.onmessage = function (event) {
     tree = event.data[0];
     lastMsg = event.data[1];
-    printOutput += event.data[2]; 
+    printOutput += event.data[2];
     if (event.data[3] === 'Finished') enableUI();
   };
   return 0;
@@ -102,11 +143,11 @@ function printInOrder() {
   lastMsg = '';
   printOutput = '';
   payload = ['Print In Order'];
-  worker.postMessage(payload); // send message 'Print In Order' to the worker thread to print all elements in-orderly
-  worker.onmessage = function (event) {
+  BST.postMessage(payload); // send message 'Print In Order' to the BST thread to print all elements in-orderly
+  BST.onmessage = function (event) {
     tree = event.data[0];
     lastMsg = event.data[1];
-    printOutput += event.data[2]; 
+    printOutput += event.data[2];
     if (event.data[3] === 'Finished') enableUI();
   };
   return 0;
@@ -117,11 +158,11 @@ function printPostOrder() {
   lastMsg = '';
   printOutput = '';
   payload = ['Print Post Order'];
-  worker.postMessage(payload); // send message 'Print Post Order' to the worker thread to print all elements post-orderly
-  worker.onmessage = function (event) {
+  BST.postMessage(payload); // send message 'Print Post Order' to the BST thread to print all elements post-orderly
+  BST.onmessage = function (event) {
     tree = event.data[0];
     lastMsg = event.data[1];
-    printOutput += event.data[2]; 
+    printOutput += event.data[2];
     if (event.data[3] === 'Finished') enableUI();
   };
   return 0;
@@ -135,14 +176,11 @@ function insert() {
   if (isNaN(value) === true) return undefined;
   disableUI();
   payload = ['Insert', value, width];
-  worker.postMessage(payload); // send message 'Insert', inputted value and canvas width to ask the Tree to insert new element
-  worker.onmessage = function (event) {
-    tree = event.data[0]; // receive our tree modifications from the worker thread so the browser's main thread can display changes at each step in the algo instead of the final change
-    lastMsg = event.data[1]; // also receive message from the worker thread after each step in the algorithm is done
-    if (event.data[2] === 'Finished') {
-      enableUI();
-      undoButton.removeAttribute('disabled'); // enable undo button after insert operation
-    }
+  BST.postMessage(payload); // send message 'Insert', inputted value and canvas width to ask the Tree to insert new element
+  BST.onmessage = function (event) {
+    tree = event.data[0]; // receive our tree modifications from the BST thread so the browser's main thread can display changes at each step in the algo instead of the final change
+    lastMsg = event.data[1]; // also receive message from the BST thread after each step in the algorithm is done
+    if (event.data[2] === 'Finished') enableUI();
   };
   return 0;
 }
@@ -155,14 +193,11 @@ function del() {
   if (isNaN(value) === true) return undefined;
   disableUI();
   payload = ['Delete', value];
-  worker.postMessage(payload); // send message 'Delete' and inputted value to ask the Tree to delete an element
-  worker.onmessage = function (event) {
-    tree = event.data[0]; // receive our tree modifications from the worker thread so the browser's main thread can display changes at each step in the algo instead of the final change
-    lastMsg = event.data[1]; // also receive message from the worker thread after each step in the algorithm is done
-    if (event.data[2] === 'Finished') {
-      enableUI();
-      undoButton.removeAttribute('disabled'); // enable undo button after delete operation
-    }
+  BST.postMessage(payload); // send message 'Delete' and inputted value to ask the Tree to delete an element
+  BST.onmessage = function (event) {
+    tree = event.data[0]; // receive our tree modifications from the BST thread so the browser's main thread can display changes at each step in the algo instead of the final change
+    lastMsg = event.data[1]; // also receive message from the BST thread after each step in the algorithm is done
+    if (event.data[2] === 'Finished') enableUI();
   };
   return 0;
 }
@@ -175,76 +210,77 @@ function find() {
   if (isNaN(value) === true) return undefined;
   disableUI();
   payload = ['Find', value];
-  worker.postMessage(payload); // send message 'Find' and inputted value to ask the Tree to find an element
-  worker.onmessage = function (event) {
-    tree = event.data[0]; // receive our tree modifications from the worker thread so the browser's main thread can display changes at each step in the algo instead of the final change
-    lastMsg = event.data[1]; // also receive message from the worker thread after each step in the algorithm is done
+  BST.postMessage(payload); // send message 'Find' and inputted value to ask the Tree to find an element
+  BST.onmessage = function (event) {
+    tree = event.data[0]; // receive our tree modifications from the BST thread so the browser's main thread can display changes at each step in the algo instead of the final change
+    lastMsg = event.data[1]; // also receive message from the BST thread after each step in the algorithm is done
     if (event.data[2] === 'Finished') enableUI();
   };
   return 0;
 }
 
+function addControls(type, name, onClick) {
+  let element;
+  switch (type) {
+    case 'Input':
+      element = createInput();
+      element.size(60);
+      break;
+    case 'Button':
+      element = createButton(name);
+      element.mousePressed(onClick);
+      break;
+    case 'Slider':
+      element = createSlider(-2000, -500, -1000, 20);
+      element.mouseReleased(onClick);
+      element.touchEnded(onClick);
+      break;
+    case 'Label':
+      element = createP(name);
+      element.class('control-label');
+      break;
+    default: break;
+  }
+  const tableEntry = createElement('td');
+  tableEntry.child(element);
+  controlBar.child(tableEntry);
+  return element;
+}
+
 function setup() {
-  // INITIALIZE WEB WORKER THREAD FOR THE TREE ALGORITHMS AND VISUALIZATION
-  worker = new Worker('tree.js');
+  // INITIALIZE WEB WORKER THREAD FOR THE TREE ALGORITHM AND VISUALIZATION
+  BST = new Worker('BST.js');
 
-  // BEGIN INSERT FORM AND BUTTON
-  insertForm = createInput();
-  insertForm.position(0, 70);
-  insertForm.size(60);
-  insertButton = createButton('Insert');
-  insertButton.position(insertForm.x + insertForm.width, 70);
-  insertButton.mousePressed(insert);
-  // END INSERT FORM AND BUTTON
-
-  // BEGIN DELETE FORM AND BUTTON
-  deleteForm = createInput();
-  deleteForm.position(insertButton.x + insertButton.width + 10, 70);
-  deleteForm.size(60);
-  deleteButton = createButton('Delete');
-  deleteButton.position(deleteForm.x + deleteForm.width, 70);
-  deleteButton.mousePressed(del);
-  // END DELETE FORM AND BUTTON
-
-
-  // BEGIN SEARCH FORM AND BUTTON
-  searchForm = createInput();
-  searchForm.position(deleteButton.x + deleteButton.width + 10, 70);
-  searchForm.size(60);
-  searchButton = createButton('Find');
-  searchButton.position(searchForm.x + searchForm.width, 70);
-  searchButton.mousePressed(find);
-  // END SEARCH FORM AND BUTTON
-
-  // BEGIN PRINT BUTTONS
-  printPreOrderButton = createButton('Print Pre Order');
-  printPreOrderButton.position(searchButton.x + searchButton.width + 10, 70);
-  printPreOrderButton.mousePressed(printPreOrder);
-  printInOrderButton = createButton('Print In Order');
-  printInOrderButton.position(printPreOrderButton.x + printPreOrderButton.width + 10, 70);
-  printInOrderButton.mousePressed(printInOrder);
-  printPostOrderButton = createButton('Print Post Order');
-  printPostOrderButton.position(printInOrderButton.x + printInOrderButton.width + 10, 70);
-  printPostOrderButton.mousePressed(printPostOrder);
-  // END PRINT BUTTONS
-
-  // BEGIN UNDO BUTTON TO REVERT TO PREVIOUS STATE
-  undoButton = createButton('Undo');
-  undoButton.position(printPostOrderButton.x + printPostOrderButton.width + 10, 70);
-  undoButton.mousePressed(undo);
-  undoButton.attribute('disabled', '');
-  // END UNDO BUTTON TO REVERT TO PREVIOUS STATE
+  // BEGIN VISUALIZATION CONTROLS STUFF
+  controlDiv = createDiv();
+  controlDiv.parent('mainContent');
+  controlDiv.id('controlSection');
+  controlBar = createElement('table');
+  controlDiv.child(controlBar);
+  insertForm = addControls('Input', '', '');
+  insertButton = addControls('Button', 'Insert', insert);
+  deleteForm = addControls('Input', '', '');
+  deleteButton = addControls('Button', 'Delete', del);
+  searchForm = addControls('Input', '', '');
+  searchButton = addControls('Button', 'Find', find);
+  printPreOrderButton = addControls('Button', 'Print Pre Order', printPreOrder);
+  printInOrderButton = addControls('Button', 'Print In Order', printInOrder);
+  printPostOrderButton = addControls('Button', 'Print Post Order', printPostOrder);
+  undoButton = addControls('Button', 'Undo', undo);
+  animationSpeedSliderLabel = addControls('Label', 'Animation Speed:', '');
+  animationSpeedSlider = addControls('Slider', '', setAnimSpeed);
+  // END VISUALIZATION CONTROLS STUFF
 
   // SET CANVAS AND TEXT SIZE
   const canvas = createCanvas(1024, 500);
-  canvas.position(0, 110);
+  canvas.parent('mainContent');
   textSize(15);
 }
 
 function draw() {
-  background(0);
+  background('white');
   displayNode(tree);
-  fill('white');
+  fill('black');
   textAlign(LEFT);
   text(lastMsg, 30, 50);
   text(printOutput, 30, 70);

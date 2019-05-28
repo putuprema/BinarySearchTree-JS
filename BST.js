@@ -1,16 +1,44 @@
+/* -------------------------------------------------------------------------------
+This code is licensed under MIT License.
+
+Copyright (c) 2019 I Putu Prema Ananda D.N
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+---------------------------------------------------------------------------------- */
+
+/* eslint-disable no-restricted-globals */
+/* eslint-disable prefer-destructuring */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-lonely-if */
 /* eslint-disable no-else-return */
 /* eslint-disable brace-style */
+/* eslint-disable func-names */
 
 let root = null;
 let lastState = null;
 let msg = '';
 let printOutput = '';
 let canvasWidth;
+let delay = 1000;
 
 class Node {
-  constructor(d, height, y, parent, loc, canvasWidth) {
+  constructor(d, height, y, parent, loc) {
     if (d instanceof Node) { // if parameter passed is a node then use all properties of the node to be cloned
       this.data = d.data;
       this.left = d.left;
@@ -18,7 +46,6 @@ class Node {
       this.parent = d.parent;
       this.loc = d.loc;
       this.height = d.height;
-      this.balanceFactor = d.balanceFactor;
       this.x = d.x;
       this.y = d.y;
       this.highlighted = d.highlighted;
@@ -30,7 +57,6 @@ class Node {
       this.parent = parent;
       this.loc = loc;
       this.height = height;
-      this.balanceFactor = 0;
       this.x = canvasWidth / 2;
       this.y = y;
       this.highlighted = false;
@@ -81,19 +107,19 @@ function search(curr, key) {
   if (key < curr.data) { // if key < current node's data then look at the left subtree
     msg = 'Searching for ' + key + ' : ' + key + ' < ' + curr.data + '. Looking at left subtree.';
     self.postMessage([root, msg, '']);
-    sleep(1000);
+    sleep(delay);
     search(curr.left, key);
   }
   else if (key > curr.data) { // if key > current node's data then look at the right subtree
     msg = 'Searching for ' + key + ' : ' + key + ' > ' + curr.data + '. Looking at right subtree.';
     self.postMessage([root, msg, '']);
-    sleep(1000);
+    sleep(delay);
     search(curr.right, key);
   }
   else { // notify the main thread that an element is found and highlight that element
     msg = 'Searching for ' + key + ' : ' + key + ' == ' + curr.data + '. Element found!';
     self.postMessage([root, msg, '']);
-    sleep(1000);
+    sleep(delay);
   }
   return 0;
 }
@@ -113,19 +139,19 @@ function pop(startingNode, key) {
     if (key < node.data) { // if key < current node's data then look at the left subtree
       msg = 'Searching for ' + key + ' : ' + key + ' < ' + node.data + '. Looking at left subtree.';
       self.postMessage([root, msg, '']);
-      sleep(1000);
+      sleep(delay);
       node.left = pop(node.left, key);
     }
     else if (key > node.data) { // if key > current node's data then look at the right subtree
       msg = 'Searching for ' + key + ' : ' + key + ' > ' + node.data + '. Looking at right subtree.';
       self.postMessage([root, msg, '']);
-      sleep(1000);
+      sleep(delay);
       node.right = pop(node.right, key);
     }
     else {
       msg = key + ' == ' + node.data + '. Found node to delete.'; // notify the main thread that node to delete is found.
       self.postMessage([root, msg, '']);
-      sleep(1000);
+      sleep(delay);
       if (!node.left && !node.right) { // if node has no child (is a leaf) then just delete it.
         msg = 'Node to delete is a leaf. Delete it.';
         node = null;
@@ -134,19 +160,19 @@ function pop(startingNode, key) {
       else if (!node.left) { // if node has RIGHT child then set parent of deleted node to right child of deleted node
         msg = 'Node to delete has no left child.\nSet parent of deleted node to right child of deleted node';
         self.postMessage([root, msg, '']);
-        sleep(1000);
+        sleep(delay);
         // CODE FOR BLINKING ANIMATION AND BLA BLA BLA..
         for (let i = 0; i < 2; i += 1) {
           node.right.highlighted = true;
           if (node === root) node.highlighted = true;
           else node.parent.highlighted = true;
           self.postMessage([root, msg, '']);
-          sleep(500);
+          sleep(delay / 2);
           node.right.highlighted = false;
           if (node === root) node.highlighted = false;
           else node.parent.highlighted = false;
           self.postMessage([root, msg, '']);
-          sleep(500);
+          sleep(delay / 2);
         }
         // END CODE FOR BLINKING ANIMATION AND BLA BLA BLA..
         let del = node;
@@ -159,18 +185,18 @@ function pop(startingNode, key) {
       else if (!node.right) { // if node has LEFT child then set parent of deleted node to left child of deleted node
         msg = 'Node to delete has no right child.\nSet parent of deleted node to left child of deleted node';
         self.postMessage([root, msg, '']);
-        sleep(1000);
+        sleep(delay);
         for (let i = 0; i < 2; i += 1) {
           node.left.highlighted = true;
           if (node === root) node.highlighted = true;
           else node.parent.highlighted = true;
           self.postMessage([root, msg, '']);
-          sleep(500);
+          sleep(delay / 2);
           node.left.highlighted = false;
           if (node === root) node.highlighted = false;
           else node.parent.highlighted = false;
           self.postMessage([root, msg, '']);
-          sleep(500);
+          sleep(delay / 2);
         }
         let del = node;
         node.left.parent = node.parent;
@@ -182,39 +208,39 @@ function pop(startingNode, key) {
       else { // if node has TWO children then find largest node in the left subtree. Copy the value of it into node to delete. After that, recursively delete the largest node in the left subtree
         msg = 'Node to delete has two children.\nFind largest node in left subtree.';
         self.postMessage([root, msg, '']);
-        sleep(1000);
+        sleep(delay);
         let largestLeft = node.left;
         while (largestLeft.right) {
           unhighlightAll(root);
           largestLeft.highlighted = true;
           self.postMessage([root, msg, '']);
-          sleep(500);
+          sleep(delay / 2);
           largestLeft = largestLeft.right;
         }
         unhighlightAll(root);
         largestLeft.highlighted = true;
         msg = 'Largest node in left subtree is ' + largestLeft.data + '.\nCopy largest value of left subtree into node to delete.';
         self.postMessage([root, msg, '']);
-        sleep(1000);
+        sleep(delay);
         // CODE FOR BLINKING ANIMATION AND BLA BLA BLA...
         for (let i = 0; i < 2; i += 1) {
           largestLeft.highlighted = true;
           node.highlighted = true;
           self.postMessage([root, msg, '']);
-          sleep(500);
+          sleep(delay / 2);
           largestLeft.highlighted = false;
           node.highlighted = false;
           self.postMessage([root, msg, '']);
-          sleep(500);
+          sleep(delay / 2);
         }
         // END CODE FOR BLINKING ANIMATION AND BLA BLA BLA...
         node.data = largestLeft.data;
         unhighlightAll(root);
         self.postMessage([root, msg, '']);
-        sleep(1000);
+        sleep(delay);
         msg = 'Recursively delete largest node in left subtree';
         self.postMessage([root, msg, '']);
-        sleep(1000);
+        sleep(delay);
         node.left = pop(node.left, largestLeft.data);
       }
     }
@@ -227,7 +253,7 @@ function pop(startingNode, key) {
 }
 
 // INSERT AN ELEMENT TO THE TREE
-function push(node, data, posY, parent, loc, canvasWidth) {
+function push(node, data, posY, parent, loc) {
   let curr = node;
 
   if (curr != null) { // highlight current node in each recursion step
@@ -237,21 +263,21 @@ function push(node, data, posY, parent, loc, canvasWidth) {
 
   if (curr == null) { // if current node is null then place the new node there
     msg = 'Found a null node. Inserted ' + data + '.';
-    curr = new Node(data, 1, posY, parent, loc, canvasWidth);
+    curr = new Node(data, 1, posY, parent, loc);
   }
   else if (data < curr.data) { // if new data < current node's data, then go to left subtree
     msg = data + ' < ' + curr.data + '. Looking at left subtree.';
     self.postMessage([root, msg, '']);
-    sleep(1000);
+    sleep(delay);
     curr.highlighted = false;
-    curr.left = push(curr.left, data, posY + 40, curr, 'left', canvasWidth);
+    curr.left = push(curr.left, data, posY + 40, curr, 'left');
   }
-  else if (data > curr.data) { // if new data > current node's data, then go to right subtree
-    msg = data + ' > ' + curr.data + '. Looking at right subtree.';
+  else if (data >= curr.data) { // if new data >= current node's data, then go to right subtree
+    msg = data + ' >= ' + curr.data + '. Looking at right subtree.';
     self.postMessage([root, msg, '']);
-    sleep(1000);
+    sleep(delay);
     curr.highlighted = false;
-    curr.right = push(curr.right, data, posY + 40, curr, 'right', canvasWidth);
+    curr.right = push(curr.right, data, posY + 40, curr, 'right');
   }
 
   curr.height = Math.max(getHeight(curr.left), getHeight(curr.right)) + 1; // update the heights of all nodes traversed by the push() function
@@ -265,7 +291,10 @@ function updatePosition(node) {
   if (node != null) {
     if (node.loc === 'left') node.x = node.parent.x - ((2 ** (getHeight(node.right) + 1)) * 10);
     else if (node.loc === 'right') node.x = node.parent.x + ((2 ** (getHeight(node.left) + 1)) * 10);
-    else if (node.loc === 'root') {node.x = canvasWidth / 2; node.y = 50;}
+    else if (node.loc === 'root') {
+      node.x = canvasWidth / 2;
+      node.y = 50;
+    }
     if (node.parent != null) node.y = node.parent.y + 40;
     if (node.left != null) node.left.parent = node; // update parent information of current node
     if (node.right != null) node.right.parent = node; // update parent information of current node
@@ -282,10 +311,10 @@ function printPreOrder(node) {
     msg = 'Printing the value';
     printOutput = node.data;
     self.postMessage([root, msg, printOutput + ' ', '']);
-    sleep(1000);
+    sleep(delay);
     msg = 'Going to left subtree';
     self.postMessage([root, msg, '', '']);
-    sleep(1000);
+    sleep(delay);
 
     printPreOrder(node.left);
 
@@ -293,7 +322,7 @@ function printPreOrder(node) {
     node.highlighted = true;
     msg = 'Going to right subtree';
     self.postMessage([root, msg, '', '']);
-    sleep(1000);
+    sleep(delay);
 
     printPreOrder(node.right);
 
@@ -301,12 +330,12 @@ function printPreOrder(node) {
     node.highlighted = true;
     msg = 'Going back up';
     self.postMessage([root, msg, '', '']);
-    sleep(1000);
+    sleep(delay);
   }
   else {
     msg += '... NULL';
     self.postMessage([root, msg, '', '']);
-    sleep(1000);
+    sleep(delay);
   }
 }
 
@@ -317,7 +346,7 @@ function printInOrder(node) {
     node.highlighted = true;
     msg = 'Going to left subtree';
     self.postMessage([root, msg, '', '']);
-    sleep(1000);
+    sleep(delay);
 
     printInOrder(node.left);
 
@@ -326,10 +355,10 @@ function printInOrder(node) {
     unhighlightAll(root);
     node.highlighted = true;
     self.postMessage([root, msg, printOutput + ' ', '']);
-    sleep(1000);
+    sleep(delay);
     msg = 'Going to right subtree';
     self.postMessage([root, msg, '', '']);
-    sleep(1000);
+    sleep(delay);
 
     printInOrder(node.right);
 
@@ -337,12 +366,12 @@ function printInOrder(node) {
     node.highlighted = true;
     msg = 'Going back up';
     self.postMessage([root, msg, '', '']);
-    sleep(1000);
+    sleep(delay);
   }
   else {
     msg += '... NULL';
     self.postMessage([root, msg, '', '']);
-    sleep(1000);
+    sleep(delay);
   }
 }
 
@@ -353,7 +382,7 @@ function printPostOrder(node) {
     node.highlighted = true;
     msg = 'Going to left subtree';
     self.postMessage([root, msg, '', '']);
-    sleep(1000);
+    sleep(delay);
 
     printPostOrder(node.left);
 
@@ -361,7 +390,7 @@ function printPostOrder(node) {
     node.highlighted = true;
     msg = 'Going to right subtree';
     self.postMessage([root, msg, '', '']);
-    sleep(1000);
+    sleep(delay);
 
     printPostOrder(node.right);
 
@@ -370,15 +399,15 @@ function printPostOrder(node) {
     unhighlightAll(root);
     node.highlighted = true;
     self.postMessage([root, msg, printOutput + ' ', '']);
-    sleep(1000);
+    sleep(delay);
     msg = 'Going back up';
     self.postMessage([root, msg, '', '']);
-    sleep(1000);    
+    sleep(delay);
   }
   else {
     msg += '... NULL';
     self.postMessage([root, msg, '', '']);
-    sleep(1000);
+    sleep(delay);
   }
 }
 
@@ -390,7 +419,7 @@ self.addEventListener('message', (event) => {
       lastState = treeClone(root);
       const value = event.data[1];
       canvasWidth = event.data[2];
-      root = push(root, value, 50, null, 'root', canvasWidth);
+      root = push(root, value, 50, null, 'root');
       updatePosition(root);
       self.postMessage([root, msg, 'Finished']);
       break;
@@ -458,6 +487,10 @@ self.addEventListener('message', (event) => {
       root = treeClone(lastState);
       updatePosition(root);
       self.postMessage([root, '', 'Finished']);
+      break;
+    }
+    case 'Set Animation Speed': {
+      delay = event.data[1];
       break;
     }
     default: break;
