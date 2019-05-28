@@ -7,6 +7,7 @@ let root = null;
 let lastState = null;
 let msg = '';
 let printOutput = '';
+let canvasWidth;
 
 class Node {
   constructor(d, height, y, parent, loc, canvasWidth) {
@@ -137,11 +138,13 @@ function pop(startingNode, key) {
         // CODE FOR BLINKING ANIMATION AND BLA BLA BLA..
         for (let i = 0; i < 2; i += 1) {
           node.right.highlighted = true;
-          node.parent.highlighted = true;
+          if (node === root) node.highlighted = true;
+          else node.parent.highlighted = true;
           self.postMessage([root, msg, '']);
           sleep(500);
           node.right.highlighted = false;
-          node.parent.highlighted = false;
+          if (node === root) node.highlighted = false;
+          else node.parent.highlighted = false;
           self.postMessage([root, msg, '']);
           sleep(500);
         }
@@ -159,11 +162,13 @@ function pop(startingNode, key) {
         sleep(1000);
         for (let i = 0; i < 2; i += 1) {
           node.left.highlighted = true;
-          node.parent.highlighted = true;
+          if (node === root) node.highlighted = true;
+          else node.parent.highlighted = true;
           self.postMessage([root, msg, '']);
           sleep(500);
           node.left.highlighted = false;
-          node.parent.highlighted = false;
+          if (node === root) node.highlighted = false;
+          else node.parent.highlighted = false;
           self.postMessage([root, msg, '']);
           sleep(500);
         }
@@ -260,6 +265,7 @@ function updatePosition(node) {
   if (node != null) {
     if (node.loc === 'left') node.x = node.parent.x - ((2 ** (getHeight(node.right) + 1)) * 10);
     else if (node.loc === 'right') node.x = node.parent.x + ((2 ** (getHeight(node.left) + 1)) * 10);
+    else if (node.loc === 'root') {node.x = canvasWidth / 2; node.y = 50;}
     if (node.parent != null) node.y = node.parent.y + 40;
     if (node.left != null) node.left.parent = node; // update parent information of current node
     if (node.right != null) node.right.parent = node; // update parent information of current node
@@ -383,7 +389,7 @@ self.addEventListener('message', (event) => {
     case 'Insert': {
       lastState = treeClone(root);
       const value = event.data[1];
-      const canvasWidth = event.data[2];
+      canvasWidth = event.data[2];
       root = push(root, value, 50, null, 'root', canvasWidth);
       updatePosition(root);
       self.postMessage([root, msg, 'Finished']);
