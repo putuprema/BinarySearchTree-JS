@@ -70,27 +70,27 @@ function getHeight(node) {
 function search(curr, key) {
   if (!curr) { // if current node is null then element does not exist in the tree
     msg = 'Searching for ' + key + ' : (Element not found)';
-    self.postMessage([root, msg]);
+    self.postMessage([root, msg, '']);
     return 0;
   }
   unhighlightAll(root);
   curr.highlighted = true;
-  self.postMessage([root, msg]);
+  self.postMessage([root, msg, '']);
   if (key < curr.data) { // if key < current node's data then look at the left subtree
     msg = 'Searching for ' + key + ' : ' + key + ' < ' + curr.data + '. Looking at left subtree.';
-    self.postMessage([root, msg]);
+    self.postMessage([root, msg, '']);
     sleep(1000);
     search(curr.left, key);
   }
   else if (key > curr.data) { // if key > current node's data then look at the right subtree
     msg = 'Searching for ' + key + ' : ' + key + ' > ' + curr.data + '. Looking at right subtree.';
-    self.postMessage([root, msg]);
+    self.postMessage([root, msg, '']);
     sleep(1000);
     search(curr.right, key);
   }
   else { // notify the main thread that an element is found and highlight that element
     msg = 'Searching for ' + key + ' : ' + key + ' == ' + curr.data + '. Element found!';
-    self.postMessage([root, msg]);
+    self.postMessage([root, msg, '']);
     sleep(1000);
   }
   return 0;
@@ -101,47 +101,47 @@ function pop(startingNode, key) {
   let node = startingNode;
   if (!node) { // if current node is null then element to delete does not exist in the tree
     msg = 'Searching for ' + key + ' : (Element not found)';
-    self.postMessage([root, msg]);
+    self.postMessage([root, msg, '']);
     return null;
   }
   else {
     unhighlightAll(root);
     node.highlighted = true;
-    self.postMessage([root, msg]);
+    self.postMessage([root, msg, '']);
     if (key < node.data) { // if key < current node's data then look at the left subtree
       msg = 'Searching for ' + key + ' : ' + key + ' < ' + node.data + '. Looking at left subtree.';
-      self.postMessage([root, msg]);
+      self.postMessage([root, msg, '']);
       sleep(1000);
       node.left = pop(node.left, key);
     }
     else if (key > node.data) { // if key > current node's data then look at the right subtree
       msg = 'Searching for ' + key + ' : ' + key + ' > ' + node.data + '. Looking at right subtree.';
-      self.postMessage([root, msg]);
+      self.postMessage([root, msg, '']);
       sleep(1000);
       node.right = pop(node.right, key);
     }
     else {
       msg = key + ' == ' + node.data + '. Found node to delete.'; // notify the main thread that node to delete is found.
-      self.postMessage([root, msg]);
+      self.postMessage([root, msg, '']);
       sleep(1000);
       if (!node.left && !node.right) { // if node has no child (is a leaf) then just delete it.
         msg = 'Node to delete is a leaf. Delete it.';
         node = null;
-        self.postMessage([root, msg]);
+        self.postMessage([root, msg, '']);
       }
       else if (!node.left) { // if node has RIGHT child then set parent of deleted node to right child of deleted node
         msg = 'Node to delete has no left child.\nSet parent of deleted node to right child of deleted node';
-        self.postMessage([root, msg]);
+        self.postMessage([root, msg, '']);
         sleep(1000);
         // CODE FOR BLINKING ANIMATION AND BLA BLA BLA..
         for (let i = 0; i < 2; i += 1) {
           node.right.highlighted = true;
           node.parent.highlighted = true;
-          self.postMessage([root, msg]);
+          self.postMessage([root, msg, '']);
           sleep(500);
           node.right.highlighted = false;
           node.parent.highlighted = false;
-          self.postMessage([root, msg]);
+          self.postMessage([root, msg, '']);
           sleep(500);
         }
         // END CODE FOR BLINKING ANIMATION AND BLA BLA BLA..
@@ -154,16 +154,16 @@ function pop(startingNode, key) {
       }
       else if (!node.right) { // if node has LEFT child then set parent of deleted node to left child of deleted node
         msg = 'Node to delete has no right child.\nSet parent of deleted node to left child of deleted node';
-        self.postMessage([root, msg]);
+        self.postMessage([root, msg, '']);
         sleep(1000);
         for (let i = 0; i < 2; i += 1) {
           node.left.highlighted = true;
           node.parent.highlighted = true;
-          self.postMessage([root, msg]);
+          self.postMessage([root, msg, '']);
           sleep(500);
           node.left.highlighted = false;
           node.parent.highlighted = false;
-          self.postMessage([root, msg]);
+          self.postMessage([root, msg, '']);
           sleep(500);
         }
         let del = node;
@@ -175,39 +175,39 @@ function pop(startingNode, key) {
       }
       else { // if node has TWO children then find largest node in the left subtree. Copy the value of it into node to delete. After that, recursively delete the largest node in the left subtree
         msg = 'Node to delete has two children.\nFind largest node in left subtree.';
-        self.postMessage([root, msg]);
+        self.postMessage([root, msg, '']);
         sleep(1000);
         let largestLeft = node.left;
         while (largestLeft.right) {
           unhighlightAll(root);
           largestLeft.highlighted = true;
-          self.postMessage([root, msg]);
+          self.postMessage([root, msg, '']);
           sleep(500);
           largestLeft = largestLeft.right;
         }
         unhighlightAll(root);
         largestLeft.highlighted = true;
         msg = 'Largest node in left subtree is ' + largestLeft.data + '.\nCopy largest value of left subtree into node to delete.';
-        self.postMessage([root, msg]);
+        self.postMessage([root, msg, '']);
         sleep(1000);
         // CODE FOR BLINKING ANIMATION AND BLA BLA BLA...
         for (let i = 0; i < 2; i += 1) {
           largestLeft.highlighted = true;
           node.highlighted = true;
-          self.postMessage([root, msg]);
+          self.postMessage([root, msg, '']);
           sleep(500);
           largestLeft.highlighted = false;
           node.highlighted = false;
-          self.postMessage([root, msg]);
+          self.postMessage([root, msg, '']);
           sleep(500);
         }
         // END CODE FOR BLINKING ANIMATION AND BLA BLA BLA...
         node.data = largestLeft.data;
         unhighlightAll(root);
-        self.postMessage([root, msg]);
+        self.postMessage([root, msg, '']);
         sleep(1000);
         msg = 'Recursively delete largest node in left subtree';
-        self.postMessage([root, msg]);
+        self.postMessage([root, msg, '']);
         sleep(1000);
         node.left = pop(node.left, largestLeft.data);
       }
@@ -226,7 +226,7 @@ function push(node, data, posY, parent, loc, canvasWidth) {
 
   if (curr != null) { // highlight current node in each recursion step
     curr.highlighted = true;
-    self.postMessage([root, msg]);
+    self.postMessage([root, msg, '']);
   }
 
   if (curr == null) { // if current node is null then place the new node there
@@ -235,14 +235,14 @@ function push(node, data, posY, parent, loc, canvasWidth) {
   }
   else if (data < curr.data) { // if new data < current node's data, then go to left subtree
     msg = data + ' < ' + curr.data + '. Looking at left subtree.';
-    self.postMessage([root, msg]);
+    self.postMessage([root, msg, '']);
     sleep(1000);
     curr.highlighted = false;
     curr.left = push(curr.left, data, posY + 40, curr, 'left', canvasWidth);
   }
   else if (data > curr.data) { // if new data > current node's data, then go to right subtree
     msg = data + ' > ' + curr.data + '. Looking at right subtree.';
-    self.postMessage([root, msg]);
+    self.postMessage([root, msg, '']);
     sleep(1000);
     curr.highlighted = false;
     curr.right = push(curr.right, data, posY + 40, curr, 'right', canvasWidth);
@@ -273,21 +273,21 @@ function printPreOrder(node) {
     unhighlightAll(root);
     node.highlighted = true;
     msg = node.data;
-    self.postMessage([root, msg + ' ']);
+    self.postMessage([root, msg + ' ', '']);
     sleep(1000);
 
     printPreOrder(node.left);
 
     unhighlightAll(root);
     node.highlighted = true;
-    self.postMessage([root, '']);
+    self.postMessage([root, '', '']);
     sleep(1000);
 
     printPreOrder(node.right);
 
     unhighlightAll(root);
     node.highlighted = true;
-    self.postMessage([root, '']);
+    self.postMessage([root, '', '']);
     sleep(1000);
   }
 }
@@ -297,23 +297,23 @@ function printInOrder(node) {
   if (node !== null) {
     unhighlightAll(root);
     node.highlighted = true;
-    self.postMessage([root, '']);
+    self.postMessage([root, '', '']);
     sleep(1000);
 
     printInOrder(node.left);
 
     msg = node.data;
-    self.postMessage([root, msg + ' ']);
+    self.postMessage([root, msg + ' ', '']);
     unhighlightAll(root);
     node.highlighted = true;
-    self.postMessage([root, '']);
+    self.postMessage([root, '', '']);
     sleep(1000);
 
     printInOrder(node.right);
 
     unhighlightAll(root);
     node.highlighted = true;
-    self.postMessage([root, '']);
+    self.postMessage([root, '', '']);
     sleep(1000);
   }
 }
@@ -323,14 +323,14 @@ function printPostOrder(node) {
   if (node !== null) {
     unhighlightAll(root);
     node.highlighted = true;
-    self.postMessage([root, '']);
+    self.postMessage([root, '', '']);
     sleep(1000);
 
     printPostOrder(node.left);
 
     unhighlightAll(root);
     node.highlighted = true;
-    self.postMessage([root, '']);
+    self.postMessage([root, '', '']);
     sleep(1000);
 
     printPostOrder(node.right);
@@ -338,7 +338,7 @@ function printPostOrder(node) {
     msg = node.data;
     unhighlightAll(root);
     node.highlighted = true;
-    self.postMessage([root, msg + ' ']);
+    self.postMessage([root, msg + ' ', '']);
     sleep(1000);
   }
 }
@@ -353,72 +353,72 @@ self.addEventListener('message', (event) => {
       const canvasWidth = event.data[2];
       root = push(root, value, 50, null, 'root', canvasWidth);
       updatePosition(root);
-      self.postMessage([root, msg]);
+      self.postMessage([root, msg, 'Finished']);
       break;
     }
     case 'Delete': {
       lastState = treeClone(root);
       const key = event.data[1];
       if (root == null) {
-        self.postMessage([root, 'Tree is empty']);
+        self.postMessage([root, 'Tree is empty', 'Finished']);
       }
       else {
         root = pop(root, key);
         updatePosition(root);
         unhighlightAll(root);
-        self.postMessage([root, msg]);
+        self.postMessage([root, msg, 'Finished']);
       }
       break;
     }
     case 'Find': {
       const key = event.data[1];
       if (root == null) {
-        self.postMessage([root, 'Tree is empty']);
+        self.postMessage([root, 'Tree is empty', 'Finished']);
       }
       else {
         search(root, key);
         unhighlightAll(root);
-        self.postMessage([root, msg]);
+        self.postMessage([root, msg, 'Finished']);
       }
       break;
     }
     case 'Print Pre Order': {
       if (root == null) {
-        self.postMessage([root, 'Tree is empty']);
+        self.postMessage([root, 'Tree is empty', 'Finished']);
       }
       else {
         printPreOrder(root);
         unhighlightAll(root);
-        self.postMessage([root, '']);
+        self.postMessage([root, '', 'Finished']);
       }
       break;
     }
     case 'Print In Order': {
       if (root == null) {
-        self.postMessage([root, 'Tree is empty']);
+        self.postMessage([root, 'Tree is empty', 'Finished']);
       }
       else {
         printInOrder(root);
         unhighlightAll(root);
-        self.postMessage([root, '']);
+        self.postMessage([root, '', 'Finished']);
       }
       break;
     }
     case 'Print Post Order': {
       if (root == null) {
-        self.postMessage([root, 'Tree is empty']);
+        self.postMessage([root, 'Tree is empty', 'Finished']);
       }
       else {
         printPostOrder(root);
         unhighlightAll(root);
-        self.postMessage([root, '']);
+        self.postMessage([root, '', 'Finished']);
       }
       break;
     }
     case 'Undo': {
       root = treeClone(lastState);
       updatePosition(root);
-      self.postMessage([root, '']);
+      self.postMessage([root, '', 'Finished']);
       break;
     }
     default: break;
