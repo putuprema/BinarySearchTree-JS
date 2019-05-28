@@ -321,7 +321,7 @@ function printInOrder(node) {
     node.highlighted = true;
     self.postMessage([root, msg, printOutput + ' ', '']);
     sleep(1000);
-    msg = 'Going the right subtree';
+    msg = 'Going to right subtree';
     self.postMessage([root, msg, '', '']);
     sleep(1000);
 
