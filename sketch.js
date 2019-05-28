@@ -100,7 +100,7 @@ function undo() {
     tree = event.data[0];
     lastMsg = event.data[1];
   };
-  undoButton.attribute('disabled', ''); // disabled undo button after use.
+  undoButton.attribute('disabled', ''); // disable undo button after use.
 }
 
 function displayNode(curr) {
@@ -128,7 +128,7 @@ function printPreOrder() {
   lastMsg = '';
   printOutput = '';
   payload = ['Print Pre Order'];
-  BST.postMessage(payload); // send message 'Print Pre Order' to the BST thread to print all elements pre-orderly
+  BST.postMessage(payload); // send message 'Print Pre Order' to the BST to print all elements pre-orderly
   BST.onmessage = function (event) {
     tree = event.data[0];
     lastMsg = event.data[1];
@@ -143,7 +143,7 @@ function printInOrder() {
   lastMsg = '';
   printOutput = '';
   payload = ['Print In Order'];
-  BST.postMessage(payload); // send message 'Print In Order' to the BST thread to print all elements in-orderly
+  BST.postMessage(payload); // send message 'Print In Order' to the BST to print all elements in-orderly
   BST.onmessage = function (event) {
     tree = event.data[0];
     lastMsg = event.data[1];
@@ -158,7 +158,7 @@ function printPostOrder() {
   lastMsg = '';
   printOutput = '';
   payload = ['Print Post Order'];
-  BST.postMessage(payload); // send message 'Print Post Order' to the BST thread to print all elements post-orderly
+  BST.postMessage(payload); // send message 'Print Post Order' to the BST to print all elements post-orderly
   BST.onmessage = function (event) {
     tree = event.data[0];
     lastMsg = event.data[1];
@@ -178,8 +178,8 @@ function insert() {
   payload = ['Insert', value, width];
   BST.postMessage(payload); // send message 'Insert', inputted value and canvas width to ask the Tree to insert new element
   BST.onmessage = function (event) {
-    tree = event.data[0]; // receive our tree modifications from the BST thread so the browser's main thread can display changes at each step in the algo instead of the final change
-    lastMsg = event.data[1]; // also receive message from the BST thread after each step in the algorithm is done
+    tree = event.data[0]; // receive our tree modifications from the BST so the browser's main thread can display changes at each step in the algo instead of the final change
+    lastMsg = event.data[1]; // also receive message from the BST after each step in the algorithm is done
     if (event.data[2] === 'Finished') enableUI();
   };
   return 0;
@@ -195,8 +195,8 @@ function del() {
   payload = ['Delete', value];
   BST.postMessage(payload); // send message 'Delete' and inputted value to ask the Tree to delete an element
   BST.onmessage = function (event) {
-    tree = event.data[0]; // receive our tree modifications from the BST thread so the browser's main thread can display changes at each step in the algo instead of the final change
-    lastMsg = event.data[1]; // also receive message from the BST thread after each step in the algorithm is done
+    tree = event.data[0]; // receive our tree modifications from the BST so the browser's main thread can display changes at each step in the algo instead of the final change
+    lastMsg = event.data[1]; // also receive message from the BST after each step in the algorithm is done
     if (event.data[2] === 'Finished') enableUI();
   };
   return 0;
@@ -212,8 +212,8 @@ function find() {
   payload = ['Find', value];
   BST.postMessage(payload); // send message 'Find' and inputted value to ask the Tree to find an element
   BST.onmessage = function (event) {
-    tree = event.data[0]; // receive our tree modifications from the BST thread so the browser's main thread can display changes at each step in the algo instead of the final change
-    lastMsg = event.data[1]; // also receive message from the BST thread after each step in the algorithm is done
+    tree = event.data[0]; // receive our tree modifications from the BST so the browser's main thread can display changes at each step in the algo instead of the final change
+    lastMsg = event.data[1]; // also receive message from the BST after each step in the algorithm is done
     if (event.data[2] === 'Finished') enableUI();
   };
   return 0;

@@ -39,7 +39,7 @@ let delay = 1000;
 
 class Node {
   constructor(d, height, y, parent, loc) {
-    if (d instanceof Node) { // if parameter passed is a node then use all properties of the node to be cloned
+    if (d instanceof Node) { // if parameter passed is a node then use all properties of the node to be cloned for the new node
       this.data = d.data;
       this.left = d.left;
       this.right = d.right;
@@ -412,7 +412,7 @@ function printPostOrder(node) {
 }
 
 // EVENT LISTENER TO LISTEN COMMANDS FROM THE MAIN THREAD. THE TREE WILL EXECUTE EVERYTHING THE MAIN THREAD WANTS.
-// AT EACH STEP IN THE ALGORITHM. THE TREE WILL NOTIFY THE MAIN THREAD ABOUT CHANGES IN THE TREE SO THE MAIN THREAD CAN DISPLAY THE CHANGES STEP-BY-STEP TO USERS FOR EASIER UNDESTANDING
+// AT EACH STEP IN THE ALGORITHM, THE TREE WILL NOTIFY THE MAIN THREAD ABOUT CHANGES IN THE TREE SO THE MAIN THREAD CAN DISPLAY THE CHANGES STEP-BY-STEP TO USERS FOR EASIER UNDERSTANDING
 self.addEventListener('message', (event) => {
   switch (event.data[0]) {
     case 'Insert': {
