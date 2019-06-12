@@ -416,81 +416,81 @@ function printPostOrder(node) {
 self.addEventListener('message', (event) => {
   switch (event.data[0]) {
     case 'Insert': {
-      lastState = treeClone(root);
-      const value = event.data[1];
-      canvasWidth = event.data[2];
-      root = push(root, value, 50, null, 'root');
-      updatePosition(root);
-      self.postMessage([root, msg, 'Finished']);
+      lastState = treeClone(root); // save last state of the tree before inserting
+      const value = event.data[1]; // get value from user input
+      canvasWidth = event.data[2]; // get canvasWidth from main thread. Important for node positioning
+      root = push(root, value, 50, null, 'root'); // push it
+      updatePosition(root); // update all node position
+      self.postMessage([root, msg, 'Finished']); // let main thread know that operation has finished
       break;
     }
     case 'Delete': {
-      lastState = treeClone(root);
-      const key = event.data[1];
+      lastState = treeClone(root); // save last state of the tree before deleting
+      const key = event.data[1]; // get value from user input
       if (root == null) {
-        self.postMessage([root, 'Tree is empty', 'Finished']);
+        self.postMessage([root, 'Tree is empty', 'Finished']); // send message to main thread that the tree is empty
       }
       else {
-        root = pop(root, key);
-        updatePosition(root);
-        unhighlightAll(root);
-        self.postMessage([root, msg, 'Finished']);
+        root = pop(root, key); // delete it
+        updatePosition(root); // update the node position
+        unhighlightAll(root); // unhighlight all nodes
+        self.postMessage([root, msg, 'Finished']); // let main thread know that operation has finished
       }
       break;
     }
     case 'Find': {
-      const key = event.data[1];
+      const key = event.data[1]; // get value from user input
       if (root == null) {
-        self.postMessage([root, 'Tree is empty', 'Finished']);
+        self.postMessage([root, 'Tree is empty', 'Finished']); // send message to main thread that the tree is empty
       }
       else {
         search(root, key);
-        unhighlightAll(root);
-        self.postMessage([root, msg, 'Finished']);
+        unhighlightAll(root); // unhighlight all nodes
+        self.postMessage([root, msg, 'Finished']); // let main thread know that operation has finished
       }
       break;
     }
     case 'Print Pre Order': {
       if (root == null) {
-        self.postMessage([root, 'Tree is empty', '', 'Finished']);
+        self.postMessage([root, 'Tree is empty', '', 'Finished']); // send message to main thread that the tree is empty
       }
       else {
         printPreOrder(root);
-        unhighlightAll(root);
-        self.postMessage([root, 'Print Finished', '', 'Finished']);
+        unhighlightAll(root); // unhighlight all nodes after operation
+        self.postMessage([root, 'Print Finished', '', 'Finished']); // let main thread know that operation has finished
       }
       break;
     }
     case 'Print In Order': {
       if (root == null) {
-        self.postMessage([root, 'Tree is empty', '', 'Finished']);
+        self.postMessage([root, 'Tree is empty', '', 'Finished']); // send message to main thread that the tree is empty
       }
       else {
         printInOrder(root);
-        unhighlightAll(root);
-        self.postMessage([root, 'Print Finished', '', 'Finished']);
+        unhighlightAll(root); // unhighlight all nodes after operation
+        self.postMessage([root, 'Print Finished', '', 'Finished']); // let main thread know that operation has finished
       }
       break;
     }
     case 'Print Post Order': {
       if (root == null) {
-        self.postMessage([root, 'Tree is empty', '', 'Finished']);
+        self.postMessage([root, 'Tree is empty', '', 'Finished']); // send message to main thread that the tree is empty
       }
       else {
         printPostOrder(root);
-        unhighlightAll(root);
-        self.postMessage([root, 'Print Finished', '', 'Finished']);
+        unhighlightAll(root); // unhighlight all nodes after operation
+        self.postMessage([root, 'Print Finished', '', 'Finished']); // let main thread know that operation has finished
       }
       break;
     }
     case 'Undo': {
-      root = treeClone(lastState);
-      updatePosition(root);
-      self.postMessage([root, '', 'Finished']);
+      root = treeClone(lastState); // replace contents of current tree with the last tree state before deletion/insertion happened
+      updatePosition(root); // update node position
+      self.postMessage([root, '', 'Finished']); // let main thread know that operation has finished
       break;
     }
     case 'Set Animation Speed': {
-      delay = event.data[1];
+      delay = event.data[1]; // get delay value from user input (slider)
       break;
     }
     default: break;
